@@ -1,0 +1,6 @@
+token-rate version: print the tool version
+
+Usage: token-rate version
+
+Options:
+  -h, --help   show this help
