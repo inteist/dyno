@@ -1,0 +1,29 @@
+token-rate report · 36 runs · 33 valid · 4 sessions · 2026-10-01 → 2026-10-02
+MODEL      MODE      DAY          N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
+lfm2.5:8b  miss      2026-10-01  12   151.8 ± 1.9       1,002    1,014     0 %
+lfm2.5:8b  miss      2026-10-02   9   149.1 ± 2.4       1,000    1,013     0 %  2 short, 1 unexpected-hit
+lfm2.5:8b  continue  2026-10-01  12   150.2 ± 0.7          18       32   100 %
+
+decode tok/s · statistics
+MODEL      MODE      DAY          N   MEAN  MEDIAN   SD    MIN    MAX
+lfm2.5:8b  miss      2026-10-01  12  151.6   151.8  1.9  148.0  155.7
+lfm2.5:8b  miss      2026-10-02   9  148.8   149.1  2.4  144.3  153.9
+lfm2.5:8b  continue  2026-10-01  12  150.1   150.2  0.7  148.8  151.6
+
+prefill ms · statistics
+MODEL      MODE      DAY          N   MEAN  MEDIAN  SD  MIN    MAX
+lfm2.5:8b  miss      2026-10-01  12  1,000   1,002  20  962  1,042
+lfm2.5:8b  miss      2026-10-02   9    998   1,000  20  960  1,040
+lfm2.5:8b  continue  2026-10-01  12     18      18   0   18     19
+
+prefill tok/s · statistics
+MODEL      MODE      DAY         N  MEAN  MEDIAN  SD  MIN  MAX
+lfm2.5:8b  miss      2026-10-01  0     -       -   -    -    -
+lfm2.5:8b  miss      2026-10-02  0     -       -   -    -    -
+lfm2.5:8b  continue  2026-10-01  0     -       -   -    -    -
+
+TTFT ms · statistics
+MODEL      MODE      DAY          N   MEAN  MEDIAN  SD  MIN    MAX
+lfm2.5:8b  miss      2026-10-01  12  1,012   1,014  20  974  1,055
+lfm2.5:8b  miss      2026-10-02   9  1,010   1,013  20  972  1,053
+lfm2.5:8b  continue  2026-10-01  12     32      32   1   30     33

@@ -1,0 +1,34 @@
+14:02:12  session 20261005T120212Z-K3F9A2 · 8 steps · prompt long · tag baseline
+14:02:12  qwen3.5:4b-mlx loading
+14:02:16  qwen3.5:4b-mlx loaded in 3.3 s
+14:02:16  qwen3.5:4b-mlx  miss    run 1  warm-up
+14:02:26  qwen3.5:4b-mlx  miss    run 1  decode 55.4 tok/s · prefill 2,207 ms · ttft 2.24 s · cached 0 %
+14:02:26  next run in 30 s
+14:02:56  qwen3.5:4b-mlx  prefix  run 1  primer 1/2
+14:02:59  qwen3.5:4b-mlx  prefix  run 1  primer 2/2
+14:03:09  qwen3.5:4b-mlx  prefix  run 1  decode 56.1 tok/s · prefill 302 ms · ttft 318 ms · cached 75 %
+14:03:09  next run in 30 s
+14:03:40  qwen3.5:4b-mlx  miss    run 2  failed: chat qwen3.5:4b-mlx: unexpected EOF
+14:03:40  next run in 30 s
+14:04:10  qwen3.5:4b-mlx  prefix  run 2  primer 1/2
+14:04:13  qwen3.5:4b-mlx  prefix  run 2  primer 2/2
+14:04:23  qwen3.5:4b-mlx  prefix  run 2  decode 56.0 tok/s · prefill 301 ms · ttft 317 ms · cached 75 %
+14:04:23  qwen3.5:4b-mlx released
+14:04:23  next run in 30 s
+14:04:53  lfm2.5:8b loading
+14:05:00  lfm2.5:8b loaded in 6.81 s
+14:05:00  lfm2.5:8b       miss    run 1  warm-up
+14:05:05  lfm2.5:8b       miss    run 1  decode 151.6 tok/s · prefill 998 ms · ttft 1.01 s · cached 0 %
+14:05:05  next run in 30 s
+14:05:35  lfm2.5:8b       prefix  run 1  primer 1/2
+14:05:38  lfm2.5:8b       prefix  run 1  primer 2/2
+14:05:45  lfm2.5:8b       prefix  run 1  decode 150.9 tok/s · prefill 121 ms · ttft 134 ms · cached 75 %
+14:05:45  next run in 30 s
+14:06:15  lfm2.5:8b       miss    run 2  reload
+14:06:22  lfm2.5:8b       miss    run 2  decode 150.9 tok/s · prefill 1,001 ms · ttft 1.01 s · cached 0 %
+14:06:22  next run in 30 s
+14:06:52  lfm2.5:8b       prefix  run 2  primer 1/2
+14:06:55  lfm2.5:8b       prefix  run 2  primer 2/2
+14:07:02  lfm2.5:8b       prefix  run 2  decode 151.1 tok/s · prefill 122 ms · ttft 134 ms · cached 75 %
+14:07:03  lfm2.5:8b released
+14:07:03  session 20261005T120212Z-K3F9A2 completed · 1 failed step · error: 1 of 8 steps failed
