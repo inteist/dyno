@@ -1,0 +1,24 @@
+ token-rate · session 20261005T120212Z-K3F9A2 · prompt long · tag baseline · 2 …
+
+ MODEL             MISS        PREFIX      LAST RUN
+ ! qwen3.5:4b-mlx  ━━━─── 1/2  ━━━━━━ 2/2  prefix: 56.0 tok/s · ttft 317 ms
+ ✓ lfm2.5:8b       ━━━━━━ 2/2  ━━━━━━ 2/2  prefix: 151.1 tok/s · ttft 134 ms
+
+ session 20261005T120212Z-K3F9A2 completed · 1 failed step
+ error: 1 of 8 steps failed
+
+ this session · 8 runs · 7 valid · 1 session · 2026-10-05
+ MODEL           MODE    N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
+ qwen3.5:4b-mlx  miss    1    55.4 ± 0.0       2,207    2,236     0 %  1 failed
+ qwen3.5:4b-mlx  prefix  2    56.1 ± 0.2         302      318    75 %
+ lfm2.5:8b       miss    2   151.2 ± 1.1         999    1,013     0 %
+ lfm2.5:8b       prefix  2   151.0 ± 0.4         122      134    75 %
+
+ all sessions with this workload · 186 runs · 178 valid · 23 sessions · 2026-10…
+ MODEL           MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED
+ qwen3.5:4b-mlx  miss    60    56.2 ± 0.8       1,941    1,958     0 %
+ qwen3.5:4b-mlx  prefix  60    56.0 ± 0.9          56       71    99 %
+ lfm2.5:8b       miss     0             -           -        -       -
+ lfm2.5:8b       prefix  58   151.3 ± 2.1         302      318    75 %
+
+ q quit
