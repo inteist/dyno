@@ -1,0 +1,7 @@
+token-rate models: list the local models
+
+Usage: token-rate models [--host URL]
+
+Options:
+  --host URL   Ollama server URL (default: OLLAMA_HOST or http://127.0.0.1:11434)
+  -h, --help   show this help

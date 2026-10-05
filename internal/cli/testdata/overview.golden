@@ -1,0 +1,9 @@
+Usage: token-rate <command> [options]
+
+Commands:
+  run       --models LIST [options]   execute a session
+  report    [options]                 summarize the stored runs
+  models    [--host URL]              list the local models
+  version                             print the tool version
+
+Run 'token-rate <command> -h' for the options of a command.
