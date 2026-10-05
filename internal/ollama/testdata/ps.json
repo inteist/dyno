@@ -1,0 +1,1 @@
+{"models":[{"name":"qwen3.5:4b-mlx","model":"qwen3.5:4b-mlx","size":4118300176,"digest":"61aa3858e9d3022e8fca725550089addd9289c4446f33bd09dfd12f95f2a6792","details":{"parent_model":"","format":"safetensors","family":"","families":null,"parameter_size":"","quantization_level":"nvfp4"},"expires_at":"2026-10-05T17:11:03.009593-04:00","size_vram":4118300176,"context_length":8192}]}

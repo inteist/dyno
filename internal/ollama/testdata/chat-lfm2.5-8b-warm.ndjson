@@ -1,0 +1,13 @@
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.486428Z","message":{"role":"assistant","content":"\u003cthink\u003e"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.492617Z","message":{"role":"assistant","content":"\n"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.498666Z","message":{"role":"assistant","content":"The"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.504999Z","message":{"role":"assistant","content":" user"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.512932Z","message":{"role":"assistant","content":" asks"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.519842Z","message":{"role":"assistant","content":":"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.526254Z","message":{"role":"assistant","content":" \""},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.534614Z","message":{"role":"assistant","content":"run"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.54073Z","message":{"role":"assistant","content":" a"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.547109Z","message":{"role":"assistant","content":"428"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.553804Z","message":{"role":"assistant","content":"5"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.560438Z","message":{"role":"assistant","content":"de"},"done":false}
+{"model":"lfm2.5:8b","created_at":"2026-10-05T21:01:06.560663Z","message":{"role":"assistant","content":""},"done":true,"done_reason":"length","total_duration":93980333,"load_duration":4816708,"prompt_eval_count":30,"prompt_eval_cached_count":26,"prompt_eval_duration":14247000,"eval_count":12,"eval_duration":74042000}

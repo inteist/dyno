@@ -1,0 +1,1 @@
+{"details":{"parent_model":"","format":"gguf","family":"lfm2moe","families":["lfm2moe"],"parameter_size":"8.5B","quantization_level":"Q4_K_M"},"capabilities":["completion","tools","thinking"],"modified_at":"2026-09-14T08:11:20.474484206-04:00"}

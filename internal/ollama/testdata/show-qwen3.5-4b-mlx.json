@@ -1,0 +1,1 @@
+{"details":{"parent_model":"","format":"safetensors","family":"qwen3_5","families":null,"parameter_size":"4.5B","quantization_level":"nvfp4"},"capabilities":["completion","vision","thinking","tools"],"modified_at":"2026-10-05T12:38:27.006714357-04:00"}
