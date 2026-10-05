@@ -1,0 +1,5 @@
+NAME            DIGEST        FORMAT       FAMILY   PARAMS  QUANT     SIZE  THINKING
+qwen3.5:9b-mlx  c1d2e3f4a5b6  safetensors  qwen3_5    9.4B  nvfp4   5.6 GB  yes
+qwen3.5:4b-mlx  a80c4f17acd5  safetensors  qwen3_5    4.7B  nvfp4   3.0 GB  yes
+lfm2.5:8b       4a6e7ed5d0e8  gguf         lfm2moe    8.3B  Q4_K_M  5.2 GB  no
+tiny:latest     abc           gguf                                  1.0 MB  no
