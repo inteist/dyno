@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd agent for scheduled token-rate sessions.
+  scripts/install-agent.sh fills the {{...}} fields and loads the agent.
+  When the Mac sleeps at the start time, launchd starts the job after the wake.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>{{LABEL}}</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{BINARY}}</string>
+        <string>run</string>
+        <string>--plain</string>
+        <string>--models</string>
+        <string>{{MODELS}}</string>
+        <string>--runs</string>
+        <string>{{RUNS}}</string>
+        <string>--interval</string>
+        <string>{{INTERVAL}}</string>
+        <string>--cache</string>
+        <string>{{CACHE}}</string>
+        <string>--tag</string>
+        <string>{{TAG}}</string>
+        <string>--db</string>
+        <string>{{DB}}</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>{{HOUR}}</integer>
+        <key>Minute</key>
+        <integer>{{MINUTE}}</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>{{LOG_DIR}}/nightly.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{LOG_DIR}}/nightly.err.log</string>
+
+    <key>ProcessType</key>
+    <string>Standard</string>
+    <key>LowPriorityIO</key>
+    <false/>
+    <key>Nice</key>
+    <integer>0</integer>
+</dict>
+</plist>
