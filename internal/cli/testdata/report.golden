@@ -1,0 +1,16 @@
+token-rate report: summarize the stored runs
+
+Usage: token-rate report [options]
+
+Options:
+  --cache modes        comma-separated cache modes: miss, continue, prefix
+  --db path            database path (default /home/max/.local/share/token-rate/bench.db)
+  --group dimensions   comma-separated dimensions: model, digest, ollama, workload, mode, tag, day, week, session (default model, digest, ollama, workload, mode)
+  --model names        comma-separated model names
+  --plain              a plain table, also in a terminal
+  --prompt names       comma-separated prompt names
+  --session IDs        comma-separated session IDs
+  --since day          first day (YYYY-MM-DD) or time (RFC 3339)
+  --tag tags           comma-separated tags
+  --until day          last day (YYYY-MM-DD, inclusive) or time (RFC 3339, exclusive)
+  -h, --help           show this help
