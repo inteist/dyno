@@ -26,7 +26,7 @@ type Command interface{ command() }
 
 // Common holds the settings that several commands share.
 type Common struct {
-	DB      string // --db, TOKEN_RATE_DB, $XDG_DATA_HOME/token-rate/bench.db, or ~/.local/share/token-rate/bench.db
+	DB      string // --db, dbVar, $XDG_DATA_HOME/dyno/bench.db, or ~/.local/share/dyno/bench.db
 	Host    string // --host; empty means that the ollama adapter uses OLLAMA_HOST or its default address
 	LogFile string // --log; empty means no log file
 }
@@ -62,10 +62,13 @@ func (e Env) getenv(key string) string {
 // location returns the time zone of dates.
 func (e Env) location() *time.Location { return cmp.Or(e.Location, time.UTC) }
 
+// dbVar is the environment variable that names the database path.
+const dbVar = "DYNO_DB"
+
 // defaultDB returns the database path without --db, or "" when no variable
 // names a path and the home folder is unknown.
 func (e Env) defaultDB() string {
-	if db := e.getenv("TOKEN_RATE_DB"); db != "" {
+	if db := e.getenv(dbVar); db != "" {
 		return db
 	}
 	dataHome := e.getenv("XDG_DATA_HOME")
@@ -75,7 +78,7 @@ func (e Env) defaultDB() string {
 	if dataHome == "" {
 		return ""
 	}
-	return filepath.Join(dataHome, "token-rate", "bench.db")
+	return filepath.Join(dataHome, domain.ToolName, "bench.db")
 }
 
 // Parse reads the arguments without the program name and returns the
@@ -188,7 +191,7 @@ func (c *Common) addDB(fs *flag.FlagSet, env Env) {
 // unknown and nothing else names a path.
 func (c Common) checkDB(command string) error {
 	if c.DB == "" {
-		return usageErrorf("%s: the home folder is unknown: set --db or TOKEN_RATE_DB", command)
+		return usageErrorf("%s: the home folder is unknown: set --db or %s", command, dbVar)
 	}
 	return nil
 }

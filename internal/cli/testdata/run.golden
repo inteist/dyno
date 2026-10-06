@@ -4,7 +4,7 @@ Usage: dyno run --models LIST [options]
 
 Options:
   --cache modes                cache modes: miss, continue, prefix (default miss)
-  --db path                    database path (default /home/max/.local/share/token-rate/bench.db)
+  --db path                    database path (default /home/max/.local/share/dyno/bench.db)
   --host URL                   Ollama server URL (default: OLLAMA_HOST or http://127.0.0.1:11434)
   --interval duration          pause between two steps, 0 or more (default 30s)
   --keep-alive duration        how long the server keeps a model loaded, longer than the interval (default: max(10m, interval + 5m))

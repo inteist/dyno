@@ -4,7 +4,7 @@ Usage: dyno report [options]
 
 Options:
   --cache modes        comma-separated cache modes: miss, continue, prefix
-  --db path            database path (default /home/max/.local/share/token-rate/bench.db)
+  --db path            database path (default /home/max/.local/share/dyno/bench.db)
   --group dimensions   comma-separated dimensions: model, digest, server, workload, mode, tag, day, week, session (default model, digest, server, workload, mode)
   --model names        comma-separated model names
   --plain              a plain table, also in a terminal

@@ -17,7 +17,7 @@ import (
 
 const (
 	testHome = "/home/max"
-	homeDB   = testHome + "/.local/share/token-rate/bench.db"
+	homeDB   = testHome + "/.local/share/dyno/bench.db"
 )
 
 // berlin returns a zone with a daylight saving time change on 2026-10-25.
@@ -134,7 +134,7 @@ func TestValidationErrorPrintsNoUsage(t *testing.T) {
 
 func TestDBPath(t *testing.T) {
 	t.Parallel()
-	all := map[string]string{"TOKEN_RATE_DB": "/env/bench.db", "XDG_DATA_HOME": "/xdg"}
+	all := map[string]string{"DYNO_DB": "/env/bench.db", "XDG_DATA_HOME": "/xdg"}
 	tests := []struct {
 		name string
 		vars map[string]string
@@ -142,8 +142,8 @@ func TestDBPath(t *testing.T) {
 		want string
 	}{
 		{"flag first", all, []string{"--db", "/flag.db"}, "/flag.db"},
-		{"then TOKEN_RATE_DB", all, nil, "/env/bench.db"},
-		{"then XDG_DATA_HOME", map[string]string{"XDG_DATA_HOME": "/xdg"}, nil, "/xdg/token-rate/bench.db"},
+		{"then DYNO_DB", all, nil, "/env/bench.db"},
+		{"then XDG_DATA_HOME", map[string]string{"XDG_DATA_HOME": "/xdg"}, nil, "/xdg/dyno/bench.db"},
 		{"then the home folder", nil, nil, homeDB},
 	}
 	for _, tt := range tests {
@@ -193,7 +193,7 @@ func TestUnknownHome(t *testing.T) {
 	t.Parallel()
 	for _, args := range [][]string{{"run", "--models", "a"}, {"report"}} {
 		_, stderr, err := parse(Env{}, args...)
-		if !errors.Is(err, ErrUsage) || !strings.Contains(err.Error(), "set --db or TOKEN_RATE_DB") {
+		if !errors.Is(err, ErrUsage) || !strings.Contains(err.Error(), "set --db or DYNO_DB") {
 			t.Errorf("%s without a home folder: error = %v", args[0], err)
 		}
 		if !strings.Contains(stderr, "Usage: dyno "+args[0]) {
