@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"io/fs"
 	"path/filepath"
 	"testing"
 	"time"
@@ -121,6 +122,17 @@ func record(t *testing.T, rec *Recorder, sessions []domain.Session, models []dom
 			t.Fatalf("SaveExchange(%s %s): %v", x.Kind, x.Step, err)
 		}
 	}
+}
+
+// schemaVersion returns the number of migrations, which is the
+// user_version of a database that has all of them.
+func schemaVersion(t *testing.T) int {
+	t.Helper()
+	names, err := fs.Glob(migrations, "migrations/*.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return len(names)
 }
 
 // queryValue returns the single value of query.

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -18,8 +19,8 @@ func TestOpenNewFile(t *testing.T) {
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("the file is not at %s: %v", path, err)
 	}
-	if got := queryValue[int](t, db, "PRAGMA user_version"); got != 1 {
-		t.Errorf("user_version = %d, want 1", got)
+	if got, want := queryValue[int](t, db, "PRAGMA user_version"), schemaVersion(t); got != want {
+		t.Errorf("user_version = %d, want %d", got, want)
 	}
 	tables := queryValue[int](t, db,
 		"SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('sessions', 'models', 'exchanges')")
@@ -67,8 +68,8 @@ func TestOpenTwiceChangesNothing(t *testing.T) {
 	}
 
 	second := openPath(t, path)
-	if got := queryValue[int](t, second, "PRAGMA user_version"); got != 1 {
-		t.Errorf("user_version = %d, want 1", got)
+	if got, want := queryValue[int](t, second, "PRAGMA user_version"), schemaVersion(t); got != want {
+		t.Errorf("user_version = %d, want %d", got, want)
 	}
 	if after := schema(t, second); !reflect.DeepEqual(after, before) {
 		t.Errorf("schema changed:\nbefore %q\nafter  %q", before, after)
@@ -165,6 +166,37 @@ func TestMigrateAppliesEachFileInOneTransaction(t *testing.T) {
 	}
 	if got := queryValue[int](t, db, "PRAGMA user_version"); got != 2 {
 		t.Errorf("user_version = %d, want 2", got)
+	}
+}
+
+func TestMigrateRenamesTheServerVersion(t *testing.T) {
+	t.Parallel()
+	db, err := sql.Open(driverName, dsn(filepath.Join(t.TempDir(), "bench.db")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
+	first, err := fs.ReadFile(migrations, "migrations/0001_init.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := migrate(t.Context(), db, fstest.MapFS{"migrations/0001_init.sql": {Data: first}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.ExecContext(t.Context(), `INSERT INTO sessions (
+		id, started_at, status, tool_version, ollama_version, host, power_source,
+		prompt_name, prompt_hash, workload_hash, num_predict, num_ctx, temperature, seed,
+		run_order, interval_ns, runs, cache_modes
+	) VALUES ('S1', '2026-10-05T14:02:12Z', 'completed', 'v1', '0.34.0', 'studio', 'ac',
+		'short', 'p', 'w', 512, 8192, 0, 42, 'model', 0, 1, 'miss')`); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := migrate(t.Context(), db, migrations); err != nil {
+		t.Fatal(err)
+	}
+	if got := queryValue[string](t, db, "SELECT server_version FROM sessions WHERE id = 'S1'"); got != "0.34.0" {
+		t.Errorf("server_version = %q, want 0.34.0", got)
 	}
 }
 
