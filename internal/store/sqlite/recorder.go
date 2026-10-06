@@ -22,7 +22,7 @@ func NewRecorder(db *sql.DB) *Recorder {
 }
 
 const insertSession = `INSERT INTO sessions (
-	id, started_at, status, tool_version, ollama_version, host, power_source, tag,
+	id, started_at, status, tool_version, server_version, host, power_source, tag,
 	prompt_name, prompt_hash, workload_hash, num_predict, num_ctx, temperature, seed,
 	run_order, interval_ns, runs, cache_modes
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`

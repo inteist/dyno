@@ -40,7 +40,7 @@ func (s *Source) Rows(ctx context.Context, f report.Filter) ([]report.Row, error
 
 // rowColumns are the columns of a report.Row. scanRow reads them in this
 // order.
-const rowColumns = `x.session_id, x.started_at, s.tag, s.ollama_version,
+const rowColumns = `x.session_id, x.started_at, s.tag, s.server_version,
 	s.prompt_name, s.prompt_hash, s.num_predict, s.num_ctx, s.temperature, s.seed,
 	x.model_name, m.digest, m.format, m.family, m.parameter_size, m.quantization, m.size_bytes,
 	x.cache_mode, x.prompt_tokens, x.cached_tokens, x.prompt_ns, x.eval_tokens, x.eval_ns,
