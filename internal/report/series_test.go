@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/stats"
+	"dyno/internal/domain"
+	"dyno/internal/stats"
 )
 
 // day is one expected point of a daily series, as a local date and the

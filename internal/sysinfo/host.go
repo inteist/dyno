@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Probe returns the short host name and the power source of this machine.

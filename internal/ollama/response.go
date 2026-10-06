@@ -8,8 +8,8 @@ import (
 	"github.com/ollama/ollama/api"
 	"github.com/ollama/ollama/types/model"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
 )
 
 // chatStream collects the chunks of one streamed chat response.

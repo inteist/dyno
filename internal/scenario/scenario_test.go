@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/prompt"
+	"dyno/internal/domain"
+	"dyno/internal/prompt"
 )
 
 // seqIDs gives the IDs "ID1", "ID2", and so on.

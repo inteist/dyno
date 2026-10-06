@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/report"
 )
 
 // filterData is a store with two sessions that differ in every filter

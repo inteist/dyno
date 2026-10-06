@@ -3,7 +3,7 @@ package sqlite
 import (
 	"strings"
 
-	"token-rate/internal/report"
+	"dyno/internal/report"
 )
 
 // rowsFrom selects the rowColumns of every exchange with its session and

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
 )
 
 // exchanger sends chat requests and records them as exchanges. Warm-ups,

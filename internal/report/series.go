@@ -4,7 +4,7 @@ import (
 	"slices"
 	"time"
 
-	"token-rate/internal/stats"
+	"dyno/internal/stats"
 )
 
 // perMetric returns the series that f makes for each metric.

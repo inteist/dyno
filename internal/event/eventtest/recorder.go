@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"token-rate/internal/event"
+	"dyno/internal/event"
 )
 
 // Recorder is a Sink that keeps every event. It is safe for concurrent use.

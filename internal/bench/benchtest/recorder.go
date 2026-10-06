@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // SessionRecord is a session as the Recorder keeps it.

@@ -9,8 +9,8 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
 )
 
 // Texts of the view.

@@ -1,4 +1,4 @@
-module token-rate
+module dyno
 
 go 1.27
 

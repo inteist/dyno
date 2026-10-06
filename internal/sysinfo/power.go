@@ -3,7 +3,7 @@ package sysinfo
 import (
 	"strings"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // parsePowerSource reads the power source from the output of `pmset -g batt`,

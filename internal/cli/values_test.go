@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestParseList(t *testing.T) {

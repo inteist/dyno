@@ -3,8 +3,8 @@ package report
 import (
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/stats"
+	"dyno/internal/domain"
+	"dyno/internal/stats"
 )
 
 // Flag names a reason to leave a run out of the statistics.

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestFormatTime(t *testing.T) {

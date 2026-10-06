@@ -7,7 +7,7 @@ import (
 	"errors"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // GenerationOptions are the sampling and context settings of a request.

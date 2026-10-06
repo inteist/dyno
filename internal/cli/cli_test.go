@@ -11,8 +11,8 @@ import (
 	"time"
 	_ "time/tzdata" // Europe/Berlin on every system
 
-	"token-rate/internal/bench"
-	"token-rate/internal/golden"
+	"dyno/internal/bench"
+	"dyno/internal/golden"
 )
 
 const (

@@ -10,10 +10,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
 )
 
 // SessionUI prints one line for each event of a session, and the summary

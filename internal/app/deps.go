@@ -10,12 +10,12 @@ import (
 
 	"golang.org/x/term"
 
-	"token-rate/internal/cli"
-	"token-rate/internal/llm"
-	"token-rate/internal/ollama"
-	"token-rate/internal/store/sqlite"
-	"token-rate/internal/ui/plain"
-	"token-rate/internal/ui/tui"
+	"dyno/internal/cli"
+	"dyno/internal/llm"
+	"dyno/internal/ollama"
+	"dyno/internal/store/sqlite"
+	"dyno/internal/ui/plain"
+	"dyno/internal/ui/tui"
 )
 
 // IO holds the standard streams of the process.

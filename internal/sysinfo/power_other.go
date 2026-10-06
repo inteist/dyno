@@ -5,7 +5,7 @@ package sysinfo
 import (
 	"context"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // powerSource is unknown outside macOS.

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"token-rate/internal/cli"
-	"token-rate/internal/ui/plain"
+	"dyno/internal/cli"
+	"dyno/internal/ui/plain"
 )
 
 // Models executes the models command.

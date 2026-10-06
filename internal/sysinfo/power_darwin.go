@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // pmsetTimeout limits the pmset call, so that a hung tool cannot delay a

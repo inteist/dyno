@@ -6,7 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"token-rate/internal/event"
+	"dyno/internal/event"
 )
 
 func TestSinkDropsOnlyLossyEventsWhenFull(t *testing.T) {

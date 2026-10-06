@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/bench"
-	"token-rate/internal/bench/benchtest"
-	"token-rate/internal/domain"
+	"dyno/internal/bench"
+	"dyno/internal/bench/benchtest"
+	"dyno/internal/domain"
 )
 
 var (

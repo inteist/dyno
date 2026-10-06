@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"token-rate/internal/sysinfo"
+	"dyno/internal/sysinfo"
 )
 
 // Version executes the version command.

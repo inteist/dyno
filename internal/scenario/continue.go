@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // continuePrimerTokens limits the answer of the first turn. The answer only

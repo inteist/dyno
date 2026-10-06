@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // dayLayout formats a day bucket, for example "2026-10-05".

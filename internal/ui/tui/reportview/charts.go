@@ -10,9 +10,9 @@ import (
 	"github.com/NimbleMarkets/ntcharts/v2/linechart/timeserieslinechart"
 	"github.com/NimbleMarkets/ntcharts/v2/sparkline"
 
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
-	"token-rate/internal/ui/tui/theme"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
+	"dyno/internal/ui/tui/theme"
 )
 
 // Texts and scales of the charts.

@@ -3,7 +3,7 @@ package scenario
 import (
 	"context"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // miss implements the miss mode: a new chat with the ID in front of the whole

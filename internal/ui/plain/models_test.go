@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/golden"
+	"dyno/internal/domain"
+	"dyno/internal/golden"
 )
 
 func sampleModels() []domain.Model {

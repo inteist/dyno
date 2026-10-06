@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/bench/benchtest"
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
-	"token-rate/internal/llm/llmtest"
+	"dyno/internal/bench/benchtest"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
+	"dyno/internal/llm/llmtest"
 )
 
 // cancelingLoad cancels the session during each load, as a user who stops

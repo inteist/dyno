@@ -5,7 +5,7 @@ package event
 import (
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Event is a fact that the runner publishes.

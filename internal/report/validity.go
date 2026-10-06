@@ -3,7 +3,7 @@ package report
 import (
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Limits of the validity rules.

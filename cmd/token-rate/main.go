@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"token-rate/internal/app"
-	"token-rate/internal/cli"
+	"dyno/internal/app"
+	"dyno/internal/cli"
 )
 
 func main() { os.Exit(run(os.Args[1:])) }

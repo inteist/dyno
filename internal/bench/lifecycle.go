@@ -8,9 +8,9 @@ import (
 	"slices"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/llm"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/llm"
 )
 
 // The wait until an unloaded model leaves the running list.

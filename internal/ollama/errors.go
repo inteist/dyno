@@ -10,7 +10,7 @@ import (
 
 	"github.com/ollama/ollama/api"
 
-	"token-rate/internal/llm"
+	"dyno/internal/llm"
 )
 
 // mapError maps an error of the api package to the errors of the llm port. It

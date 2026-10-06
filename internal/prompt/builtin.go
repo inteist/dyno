@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Names of the built-in sets.

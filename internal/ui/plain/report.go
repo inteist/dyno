@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
 )
 
 // reportTitle starts the heading of the report command.

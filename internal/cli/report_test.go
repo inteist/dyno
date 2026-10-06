@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/report"
 )
 
 // inUTC returns c with its times in UTC, so that reflect.DeepEqual compares

@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Set is the text of a workload.

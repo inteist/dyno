@@ -3,8 +3,8 @@ package bench
 import (
 	"context"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
+	"dyno/internal/domain"
+	"dyno/internal/event"
 )
 
 // stepExecutor implements scenario.Executor for one step and one model.

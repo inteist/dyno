@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"token-rate/internal/ui/format"
+	"dyno/internal/ui/format"
 )
 
 // columnGap is the space between two columns.

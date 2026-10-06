@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestSchedule(t *testing.T) {

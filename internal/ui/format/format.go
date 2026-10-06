@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"token-rate/internal/report"
-	"token-rate/internal/stats"
+	"dyno/internal/report"
+	"dyno/internal/stats"
 )
 
 // Separator joins the parts of one line, as in "decode 55.4 tok/s · ttft 71 ms".

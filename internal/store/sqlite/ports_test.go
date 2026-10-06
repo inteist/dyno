@@ -1,9 +1,9 @@
 package sqlite_test
 
 import (
-	"token-rate/internal/bench"
-	"token-rate/internal/report"
-	"token-rate/internal/store/sqlite"
+	"dyno/internal/bench"
+	"dyno/internal/report"
+	"dyno/internal/store/sqlite"
 )
 
 // The adapter implements the ports without an import of bench.

@@ -17,8 +17,8 @@ import (
 
 	"github.com/ollama/ollama/api"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
 )
 
 // Names of the recorded models.

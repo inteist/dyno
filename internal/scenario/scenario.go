@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/prompt"
+	"dyno/internal/domain"
+	"dyno/internal/prompt"
 )
 
 // Executor gives a scenario the actions that it needs. The runner binds an

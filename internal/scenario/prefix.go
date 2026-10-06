@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // prefixPrimers is the number of primers before a prefix run. In the test of

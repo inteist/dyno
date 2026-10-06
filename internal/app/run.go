@@ -7,16 +7,16 @@ import (
 	"io"
 	"time"
 
-	"token-rate/internal/bench"
-	"token-rate/internal/cli"
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/llm"
-	"token-rate/internal/prompt"
-	"token-rate/internal/report"
-	"token-rate/internal/store/sqlite"
-	"token-rate/internal/sysinfo"
-	"token-rate/internal/ui/plain"
+	"dyno/internal/bench"
+	"dyno/internal/cli"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/llm"
+	"dyno/internal/prompt"
+	"dyno/internal/report"
+	"dyno/internal/store/sqlite"
+	"dyno/internal/sysinfo"
+	"dyno/internal/ui/plain"
 )
 
 // Run executes the run command.

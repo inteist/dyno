@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
-	"token-rate/internal/llm/llmtest"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
+	"dyno/internal/llm/llmtest"
 )
 
 var _ llm.Client = (*llmtest.Fake)(nil)

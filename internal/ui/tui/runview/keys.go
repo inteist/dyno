@@ -4,8 +4,8 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 
-	"token-rate/internal/ui/format"
-	"token-rate/internal/ui/tui/theme"
+	"dyno/internal/ui/format"
+	"dyno/internal/ui/tui/theme"
 )
 
 // Texts of the key hint.

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // dimensionRows returns three valid runs that differ in every dimension.

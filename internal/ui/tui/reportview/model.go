@@ -8,9 +8,9 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
-	"token-rate/internal/ui/tui/theme"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
+	"dyno/internal/ui/tui/theme"
 )
 
 // Layout limits, in cells.

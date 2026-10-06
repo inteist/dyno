@@ -10,10 +10,10 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/report"
-	"token-rate/internal/stats"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/report"
+	"dyno/internal/stats"
 )
 
 // zone keeps the golden files independent of the time zone of the machine.

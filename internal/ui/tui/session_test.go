@@ -14,10 +14,10 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/report"
-	"token-rate/internal/ui/tui/runview"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/report"
+	"dyno/internal/ui/tui/runview"
 )
 
 // sessionUI copies the SessionUI port of plan section 8.7, which the app

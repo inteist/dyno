@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // timeLayout is the form of every stored time: UTC with a fixed width, so

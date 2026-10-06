@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"io"
 
-	"token-rate/internal/bench"
-	"token-rate/internal/cli"
-	"token-rate/internal/event"
-	"token-rate/internal/report"
+	"dyno/internal/bench"
+	"dyno/internal/cli"
+	"dyno/internal/event"
+	"dyno/internal/report"
 )
 
 // SessionUI presents one session. plain.SessionUI and tui.SessionUI

@@ -5,8 +5,8 @@ import (
 
 	"github.com/ollama/ollama/api"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
 )
 
 // toChatRequest builds the streamed request with the options of plan section

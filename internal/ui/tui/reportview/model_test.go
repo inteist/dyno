@@ -9,9 +9,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
-	"token-rate/internal/ui/tui/theme"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
+	"dyno/internal/ui/tui/theme"
 )
 
 // keyPress returns the message of the key that k names, as

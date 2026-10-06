@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/report"
-	"token-rate/internal/stats"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/report"
+	"dyno/internal/stats"
 )
 
 // sessionUI and reportUI copy the ports of plan section 8.7, which the app

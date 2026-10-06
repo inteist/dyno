@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
 )
 
 // Methods of llm.Client, as Call.Method records them.

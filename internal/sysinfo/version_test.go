@@ -8,7 +8,7 @@ import (
 
 // buildInfo returns build info with version and the VCS settings kv.
 func buildInfo(version string, kv ...string) *debug.BuildInfo {
-	info := &debug.BuildInfo{Main: debug.Module{Path: "token-rate", Version: version}}
+	info := &debug.BuildInfo{Main: debug.Module{Path: "dyno", Version: version}}
 	for i := 0; i+1 < len(kv); i += 2 {
 		info.Settings = append(info.Settings, debug.BuildSetting{Key: kv[i], Value: kv[i+1]})
 	}

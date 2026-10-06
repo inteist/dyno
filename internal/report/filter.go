@@ -3,7 +3,7 @@ package report
 import (
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Filter selects rows. A zero field selects everything. Since is inclusive

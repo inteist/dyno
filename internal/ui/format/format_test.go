@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/report"
-	"token-rate/internal/stats"
+	"dyno/internal/report"
+	"dyno/internal/stats"
 )
 
 // floatCase is one input of a function that formats a float64.

@@ -1,6 +1,6 @@
 package bench
 
-import "token-rate/internal/domain"
+import "dyno/internal/domain"
 
 // Schedule returns the steps of a session in execution order. Inside one
 // model and one run number, the steps take the cache modes in the given

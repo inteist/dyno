@@ -1,8 +1,8 @@
 package runview
 
 import (
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
 )
 
 // reportLines returns the heading of r and the table of its groups, with

@@ -9,9 +9,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"token-rate/internal/event"
-	"token-rate/internal/report"
-	"token-rate/internal/ui/tui/runview"
+	"dyno/internal/event"
+	"dyno/internal/report"
+	"dyno/internal/ui/tui/runview"
 )
 
 // SessionUI presents one session with the run view. Bubble Tea runs in the

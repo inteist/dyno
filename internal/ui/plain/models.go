@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/ui/format"
+	"dyno/internal/domain"
+	"dyno/internal/ui/format"
 )
 
 // WriteModels writes the table of the local models.

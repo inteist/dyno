@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/report"
 )
 
 func TestRoundTrip(t *testing.T) {

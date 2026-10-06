@@ -3,7 +3,7 @@ package sysinfo
 import (
 	"testing"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestParsePowerSource(t *testing.T) {

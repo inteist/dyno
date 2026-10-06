@@ -10,8 +10,8 @@ import (
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 
-	"token-rate/internal/event"
-	"token-rate/internal/ui/tui/theme"
+	"dyno/internal/event"
+	"dyno/internal/ui/tui/theme"
 )
 
 // tickEvery is the interval of the countdown.

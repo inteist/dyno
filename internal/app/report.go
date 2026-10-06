@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"token-rate/internal/cli"
-	"token-rate/internal/store/sqlite"
+	"dyno/internal/cli"
+	"dyno/internal/store/sqlite"
 )
 
 // Report executes the report command.

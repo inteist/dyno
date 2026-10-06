@@ -1,8 +1,8 @@
 package scenario
 
 import (
-	"token-rate/internal/domain"
-	"token-rate/internal/prompt"
+	"dyno/internal/domain"
+	"dyno/internal/prompt"
 )
 
 // idPosition tells where the unique ID goes. The position decides what the

@@ -3,7 +3,7 @@ package runview
 import (
 	"time"
 
-	"token-rate/internal/report"
+	"dyno/internal/report"
 )
 
 // SummaryMsg carries the reports after the session: the runs of this

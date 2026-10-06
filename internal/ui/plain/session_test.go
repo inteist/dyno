@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/golden"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/golden"
+	"dyno/internal/report"
 )
 
 // timed is an event and its time after start.

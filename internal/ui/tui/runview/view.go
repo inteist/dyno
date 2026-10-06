@@ -9,11 +9,11 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/report"
-	"token-rate/internal/ui/format"
-	"token-rate/internal/ui/tui/theme"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/report"
+	"dyno/internal/ui/format"
+	"dyno/internal/ui/tui/theme"
 )
 
 const (

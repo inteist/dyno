@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/bench/benchtest"
+	"dyno/internal/bench/benchtest"
 )
 
 func TestThrottle(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"slices"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/report"
 )
 
 // ReportCommand summarizes the stored runs.

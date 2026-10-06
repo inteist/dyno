@@ -6,8 +6,8 @@ import (
 	"slices"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/stats"
+	"dyno/internal/domain"
+	"dyno/internal/stats"
 )
 
 // Build groups rows by dims and summarizes each group. Empty dims give one

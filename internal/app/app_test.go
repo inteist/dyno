@@ -12,14 +12,14 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/bench"
-	"token-rate/internal/cli"
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
-	"token-rate/internal/llm/llmtest"
-	"token-rate/internal/prompt"
-	"token-rate/internal/report"
-	"token-rate/internal/store/sqlite"
+	"dyno/internal/bench"
+	"dyno/internal/cli"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
+	"dyno/internal/llm/llmtest"
+	"dyno/internal/prompt"
+	"dyno/internal/report"
+	"dyno/internal/store/sqlite"
 )
 
 var testModels = []domain.Model{

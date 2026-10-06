@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestHostURL(t *testing.T) {

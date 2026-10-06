@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/llm"
-	"token-rate/internal/prompt"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/llm"
+	"dyno/internal/prompt"
 )
 
 // Recorder stores sessions, models, and exchanges. Each call commits at once.

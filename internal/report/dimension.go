@@ -3,7 +3,7 @@ package report
 import (
 	"strings"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Dimension is a field that the report can group by.

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestShortName(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestBuiltinHashes(t *testing.T) {

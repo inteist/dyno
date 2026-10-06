@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-const module = "token-rate"
+const module = "dyno"
 
 // rule names the module packages and the third-party path prefixes that a
 // package is permitted to import. A prefix matches itself and every path
@@ -136,8 +136,8 @@ func TestRuleCheck(t *testing.T) {
 	r := rule{internal: []string{"domain"}, thirdParty: []string{"modernc.org/sqlite"}}
 	for imp, ok := range map[string]bool{
 		"fmt":                          true,
-		"token-rate/internal/domain":   true,
-		"token-rate/internal/bench":    false,
+		"dyno/internal/domain":   true,
+		"dyno/internal/bench":    false,
 		"modernc.org/sqlite":           true,
 		"modernc.org/sqlite/lib":       true,
 		"modernc.org/sqlitex":          false,

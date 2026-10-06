@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Recorder writes sessions, models, and exchanges. Each call commits at

@@ -8,8 +8,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"token-rate/internal/golden"
-	"token-rate/internal/report"
+	"dyno/internal/golden"
+	"dyno/internal/report"
 )
 
 // windows are the sizes of the golden views.

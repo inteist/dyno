@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"token-rate/internal/report"
+	"dyno/internal/report"
 )
 
 // Source reads the stored runs. It implements report.Source.

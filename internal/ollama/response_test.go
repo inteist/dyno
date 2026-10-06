@@ -11,7 +11,7 @@ import (
 
 	"github.com/ollama/ollama/api"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // recordedStream is one chat stream of testdata.

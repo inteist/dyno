@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
-	"token-rate/internal/prompt"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
+	"dyno/internal/prompt"
 )
 
 func validOptions() Options {

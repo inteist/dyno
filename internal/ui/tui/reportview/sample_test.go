@@ -4,8 +4,8 @@ import (
 	"math"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/report"
 )
 
 // zone keeps the golden files independent of the time zone of the machine.

@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
-	"token-rate/internal/event/eventtest"
-	"token-rate/internal/llm"
-	"token-rate/internal/llm/llmtest"
+	"dyno/internal/domain"
+	"dyno/internal/event"
+	"dyno/internal/event/eventtest"
+	"dyno/internal/llm"
+	"dyno/internal/llm/llmtest"
 )
 
 func TestRunEventOrder(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 func TestClassify(t *testing.T) {

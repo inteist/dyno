@@ -5,7 +5,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"token-rate/internal/event"
+	"dyno/internal/event"
 )
 
 // sinkBuffer is the number of messages that the sink holds before it drops

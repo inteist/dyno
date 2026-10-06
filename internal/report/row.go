@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // Row is one run with the session facts that the report groups by.

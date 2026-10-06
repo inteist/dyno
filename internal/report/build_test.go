@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/stats"
+	"dyno/internal/domain"
+	"dyno/internal/stats"
 )
 
 // at returns a UTC time in October 2026. October 5 is a Monday in 2026-W41.

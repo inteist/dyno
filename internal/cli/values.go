@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"token-rate/internal/domain"
+	"dyno/internal/domain"
 )
 
 // value is a flag.Value that converts its text with parse and shows its

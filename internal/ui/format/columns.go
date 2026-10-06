@@ -3,8 +3,8 @@ package format
 import (
 	"strings"
 
-	"token-rate/internal/report"
-	"token-rate/internal/stats"
+	"dyno/internal/report"
+	"dyno/internal/stats"
 )
 
 // Column describes one column of a table of T values.

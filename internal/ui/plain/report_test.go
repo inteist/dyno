@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/golden"
-	"token-rate/internal/report"
+	"dyno/internal/domain"
+	"dyno/internal/golden"
+	"dyno/internal/report"
 )
 
 // dailyReport groups one model by mode and day.

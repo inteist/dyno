@@ -4,8 +4,8 @@ import (
 	"slices"
 	"testing"
 
-	"token-rate/internal/event"
-	"token-rate/internal/event/eventtest"
+	"dyno/internal/event"
+	"dyno/internal/event/eventtest"
 )
 
 func TestTeeAndRecorder(t *testing.T) {

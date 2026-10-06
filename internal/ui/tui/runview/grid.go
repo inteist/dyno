@@ -3,7 +3,7 @@ package runview
 import (
 	"charm.land/lipgloss/v2"
 
-	"token-rate/internal/ui/format"
+	"dyno/internal/ui/format"
 )
 
 // gap is the space between two columns.

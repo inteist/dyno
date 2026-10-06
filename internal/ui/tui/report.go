@@ -7,8 +7,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"token-rate/internal/report"
-	"token-rate/internal/ui/tui/reportview"
+	"dyno/internal/report"
+	"dyno/internal/ui/tui/reportview"
 )
 
 // ReportUI shows a report in the report view on the alternate screen.

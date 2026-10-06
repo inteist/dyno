@@ -4,8 +4,8 @@ import (
 	"slices"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/event"
+	"dyno/internal/domain"
+	"dyno/internal/event"
 )
 
 // Phase is what the current step does.

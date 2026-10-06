@@ -6,9 +6,9 @@ import (
 	"slices"
 	"time"
 
-	"token-rate/internal/domain"
-	"token-rate/internal/llm"
-	"token-rate/internal/prompt"
+	"dyno/internal/domain"
+	"dyno/internal/llm"
+	"dyno/internal/prompt"
 )
 
 // ErrInvalidOptions wraps every problem that Options.Validate finds.
