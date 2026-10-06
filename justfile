@@ -1,10 +1,10 @@
 default: check
 
 build:
-    go build -o bin/token-rate ./cmd/token-rate
+    go build -o bin/dyno ./cmd/dyno
 
 install:
-    go install ./cmd/token-rate
+    go install ./cmd/dyno
 
 test:
     go test -race ./...

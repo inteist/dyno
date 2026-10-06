@@ -55,7 +55,7 @@ func rules() map[string]rule {
 		"internal/ui/tui/reportview": {internal: tuiInternal, thirdParty: tuiThirdParty},
 		"internal/cli":               {internal: []string{"domain", "llm", "prompt", "bench", "report"}},
 		"internal/app":               {internal: []string{"*"}, thirdParty: []string{"golang.org/x/term"}},
-		"cmd/token-rate":             {internal: []string{"cli", "app"}},
+		"cmd/dyno":                   {internal: []string{"cli", "app"}},
 	}
 }
 
@@ -136,8 +136,8 @@ func TestRuleCheck(t *testing.T) {
 	r := rule{internal: []string{"domain"}, thirdParty: []string{"modernc.org/sqlite"}}
 	for imp, ok := range map[string]bool{
 		"fmt":                          true,
-		"dyno/internal/domain":   true,
-		"dyno/internal/bench":    false,
+		"dyno/internal/domain":         true,
+		"dyno/internal/bench":          false,
 		"modernc.org/sqlite":           true,
 		"modernc.org/sqlite/lib":       true,
 		"modernc.org/sqlitex":          false,

@@ -1,4 +1,4 @@
-// Command token-rate measures how fast local models generate tokens through
+// Command dyno measures how fast local models generate tokens through
 // Ollama, and keeps every run in a SQLite file.
 package main
 
