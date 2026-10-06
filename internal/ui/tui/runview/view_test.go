@@ -277,10 +277,13 @@ func TestReportLinesKeepColumnsThatFit(t *testing.T) {
 	r := allTimeReport()
 	wide := m.reportLines(format.AllTimeTitle, r, 200)
 	narrow := m.reportLines(format.AllTimeTitle, r, 20)
-	if !strings.Contains(wide[1], "DIGEST") || !strings.Contains(wide[1], "EXCLUDED") {
-		t.Errorf("a wide table lacks columns: %q", wide[1])
+	dropped := []string{report.ByDigest.Header(), report.ByServer.Header(), "EXCLUDED"}
+	for _, header := range dropped {
+		if !strings.Contains(wide[1], header) {
+			t.Errorf("a wide table lacks %s: %q", header, wide[1])
+		}
 	}
-	for _, header := range []string{"DIGEST", "OLLAMA", "EXCLUDED"} {
+	for _, header := range dropped {
 		if strings.Contains(narrow[1], header) {
 			t.Errorf("a narrow table keeps %s: %q", header, narrow[1])
 		}

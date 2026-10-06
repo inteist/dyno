@@ -32,7 +32,7 @@ type Session struct {
 	ID            SessionID
 	StartedAt     time.Time
 	ToolVersion   string
-	OllamaVersion string
+	ServerVersion string
 	Host          Host
 	Tag           string
 	Workload      Workload

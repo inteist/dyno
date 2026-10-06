@@ -76,7 +76,7 @@ func testReport() report.Report {
 	first := report.Row{
 		Session:       domain.NewSessionID(at, "K3F9A2"),
 		StartedAt:     at,
-		OllamaVersion: "0.34.0",
+		ServerVersion: "0.34.0",
 		Model:         domain.Model{Name: "qwen3.5:4b-mlx", Digest: "a80c4f17acd5"},
 		Mode:          domain.CacheMiss,
 		Measurement: domain.Measurement{

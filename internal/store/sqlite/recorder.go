@@ -38,7 +38,7 @@ func sessionArgs(s domain.Session) []any {
 	w := s.Workload
 	return []any{
 		string(s.ID), formatTime(s.StartedAt), string(domain.StatusRunning),
-		s.ToolVersion, s.OllamaVersion, s.Host.Name, s.Host.PowerSource, s.Tag,
+		s.ToolVersion, s.ServerVersion, s.Host.Name, s.Host.PowerSource, s.Tag,
 		w.PromptName, w.PromptHash, w.Hash(), w.NumPredict, w.NumCtx, w.Temperature, w.Seed,
 		string(s.Order), int64(s.Interval), s.Runs, joinModes(s.CacheModes),
 	}

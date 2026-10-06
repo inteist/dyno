@@ -196,7 +196,7 @@ func digestOf(model string) string {
 }
 
 func groupKey(model string, mode domain.CacheMode) report.Key {
-	return report.Key{Model: model, Digest: domain.Model{Digest: digestOf(model)}.ShortDigest(), Ollama: "0.34.0", Mode: string(mode)}
+	return report.Key{Model: model, Digest: domain.Model{Digest: digestOf(model)}.ShortDigest(), Server: "0.34.0", Mode: string(mode)}
 }
 
 // sessionReport is the report of the sample session, grouped as the app
@@ -235,7 +235,7 @@ func sessionReport() report.Report {
 // all sessions.
 func allTimeReport() report.Report {
 	return report.Report{
-		Dimensions: []report.Dimension{report.ByModel, report.ByDigest, report.ByOllama, report.ByMode},
+		Dimensions: []report.Dimension{report.ByModel, report.ByDigest, report.ByServer, report.ByMode},
 		Groups: []report.Group{
 			{
 				Key: groupKey(qwen, domain.CacheMiss), Decode: spreadOf(60, 56.21, 0.84),

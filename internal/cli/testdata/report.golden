@@ -5,7 +5,7 @@ Usage: token-rate report [options]
 Options:
   --cache modes        comma-separated cache modes: miss, continue, prefix
   --db path            database path (default /home/max/.local/share/token-rate/bench.db)
-  --group dimensions   comma-separated dimensions: model, digest, ollama, workload, mode, tag, day, week, session (default model, digest, ollama, workload, mode)
+  --group dimensions   comma-separated dimensions: model, digest, server, workload, mode, tag, day, week, session (default model, digest, server, workload, mode)
   --model names        comma-separated model names
   --plain              a plain table, also in a terminal
   --prompt names       comma-separated prompt names

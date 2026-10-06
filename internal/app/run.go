@@ -87,7 +87,7 @@ func sessionDimensions() []report.Dimension {
 // allTimeDimensions group the runs of all sessions. They keep different
 // digests and server versions apart.
 func allTimeDimensions() []report.Dimension {
-	return []report.Dimension{report.ByModel, report.ByDigest, report.ByOllama, report.ByMode}
+	return []report.Dimension{report.ByModel, report.ByDigest, report.ByServer, report.ByMode}
 }
 
 // showSummary presents the runs of the session next to all runs with the

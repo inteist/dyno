@@ -14,7 +14,7 @@ func dimensionRows() []Row {
 	a.Model = domain.Model{Name: "a", Digest: "d1d1d1d1d1d1ffff"}
 	b.Model = domain.Model{Name: "b", Digest: "d2d2d2d2d2d2ffff"}
 	c.Model = domain.Model{Name: "a", Digest: "d2d2d2d2d2d2ffff"}
-	a.OllamaVersion, b.OllamaVersion, c.OllamaVersion = "0.34.0", "0.33.0", "0.34.0"
+	a.ServerVersion, b.ServerVersion, c.ServerVersion = "0.34.0", "0.33.0", "0.34.0"
 	a.Workload, b.Workload, c.Workload = workload("h1"), workload("h2"), workload("h2")
 	a.Mode, b.Mode, c.Mode = domain.CachePrefix, domain.CacheMiss, domain.CacheContinue
 	a.Tag, b.Tag, c.Tag = "t1", "t2", "t1"
@@ -38,7 +38,7 @@ func TestBuildGroupsByDimension(t *testing.T) {
 			name: "digest", dims: []Dimension{ByDigest},
 			want: []Key{{Digest: "d1d1d1d1d1d1"}, {Digest: "d2d2d2d2d2d2"}}, sizes: []int{1, 2},
 		},
-		{name: "ollama", dims: []Dimension{ByOllama}, want: []Key{{Ollama: "0.33.0"}, {Ollama: "0.34.0"}}, sizes: []int{1, 2}},
+		{name: "server", dims: []Dimension{ByServer}, want: []Key{{Server: "0.33.0"}, {Server: "0.34.0"}}, sizes: []int{1, 2}},
 		{name: "workload", dims: []Dimension{ByWorkload}, want: []Key{{Workload: h1}, {Workload: h2}}, sizes: []int{1, 2}},
 		{
 			name: "mode", dims: []Dimension{ByMode},
@@ -52,9 +52,9 @@ func TestBuildGroupsByDimension(t *testing.T) {
 		{
 			name: "default", dims: DefaultDimensions(),
 			want: []Key{
-				{Model: "a", Digest: "d1d1d1d1d1d1", Ollama: "0.34.0", Workload: h1, Mode: "prefix"},
-				{Model: "a", Digest: "d2d2d2d2d2d2", Ollama: "0.34.0", Workload: h2, Mode: "continue"},
-				{Model: "b", Digest: "d2d2d2d2d2d2", Ollama: "0.33.0", Workload: h2, Mode: "miss"},
+				{Model: "a", Digest: "d1d1d1d1d1d1", Server: "0.34.0", Workload: h1, Mode: "prefix"},
+				{Model: "a", Digest: "d2d2d2d2d2d2", Server: "0.34.0", Workload: h2, Mode: "continue"},
+				{Model: "b", Digest: "d2d2d2d2d2d2", Server: "0.33.0", Workload: h2, Mode: "miss"},
 			},
 			sizes: []int{1, 1, 1},
 		},

@@ -52,7 +52,7 @@ func scanRow(rows *sql.Rows) (report.Row, error) {
 	w, m := &r.Workload, &r.Model
 	srv, cli := &r.Measurement.Server, &r.Measurement.Client
 	err := rows.Scan(
-		&r.Session, timeColumn{&r.StartedAt}, &r.Tag, &r.OllamaVersion,
+		&r.Session, timeColumn{&r.StartedAt}, &r.Tag, &r.ServerVersion,
 		&w.PromptName, &w.PromptHash, &w.NumPredict, &w.NumCtx, &w.Temperature, &w.Seed,
 		&m.Name, &m.Digest, &m.Format, &m.Family, &m.Parameters, &m.Quantization, &m.SizeBytes,
 		&r.Mode, orZero(&srv.PromptTokens), orZero(&srv.CachedTokens), orZero(&srv.PromptDuration),

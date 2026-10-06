@@ -219,7 +219,7 @@ func TestRunStoresSessionRow(t *testing.T) {
 		ID:            "20261005T120000Z-ID0001",
 		StartedAt:     testStart(),
 		ToolVersion:   "1.2.3",
-		OllamaVersion: "0.34.1",
+		ServerVersion: "0.34.1",
 		Host:          domain.Host{Name: "mac", PowerSource: domain.PowerAC},
 		Tag:           "nightly",
 		Workload:      h.opts.Workload(),

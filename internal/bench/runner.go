@@ -151,7 +151,7 @@ func (r *Runner) newSession(version string) domain.Session {
 		ID:            domain.NewSessionID(start, r.deps.IDs.Next()),
 		StartedAt:     start,
 		ToolVersion:   r.deps.Meta.Tool,
-		OllamaVersion: version,
+		ServerVersion: version,
 		Host:          r.deps.Meta.Host,
 		Tag:           r.opts.Tag,
 		Workload:      r.opts.Workload(),

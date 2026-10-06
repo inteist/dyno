@@ -50,7 +50,7 @@ func testSession(id domain.SessionID, start time.Time, tag, promptName string, n
 		ID:            id,
 		StartedAt:     start,
 		ToolVersion:   "v0.1.0",
-		OllamaVersion: "0.34.0",
+		ServerVersion: "0.34.0",
 		Host:          domain.Host{Name: "studio", PowerSource: domain.PowerAC},
 		Tag:           tag,
 		Workload: domain.Workload{
@@ -97,7 +97,7 @@ func failed(x domain.Exchange, err string) domain.Exchange {
 func wantRow(s domain.Session, model domain.Model, x domain.Exchange) report.Row {
 	model.Name = x.Model.Name
 	return report.Row{
-		Session: s.ID, StartedAt: x.StartedAt.UTC(), Tag: s.Tag, OllamaVersion: s.OllamaVersion,
+		Session: s.ID, StartedAt: x.StartedAt.UTC(), Tag: s.Tag, ServerVersion: s.ServerVersion,
 		Workload: s.Workload, Model: model, Mode: x.Step.Mode, Measurement: x.Measurement, Err: x.Err,
 	}
 }

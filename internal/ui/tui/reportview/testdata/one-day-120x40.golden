@@ -1,5 +1,5 @@
  token-rate report · 11 runs · 9 valid · 1 session · 2026-09-28                        tab next metric · ? help · q quit
- OLLAMA 0.34.0 · WORKLOAD 6e02f8a7d9fe
+ SERVER 0.34.0 · WORKLOAD 6e02f8a7d9fe
 
  MODEL           MODE      N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
 ▸lfm2.5:8b       prefix    3   150.1 ± 0.6         304      321    75 %  1 failed

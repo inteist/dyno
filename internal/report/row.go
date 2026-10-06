@@ -12,7 +12,7 @@ type Row struct {
 	Session       domain.SessionID
 	StartedAt     time.Time // the start of the run, not of the session
 	Tag           string
-	OllamaVersion string
+	ServerVersion string
 	Workload      domain.Workload
 	Model         domain.Model
 	Mode          domain.CacheMode

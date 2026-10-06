@@ -28,7 +28,7 @@ func newRow(t time.Time, decode int) Row {
 		Session:       "s1",
 		StartedAt:     t,
 		Tag:           "nightly",
-		OllamaVersion: "0.34.0",
+		ServerVersion: "0.34.0",
 		Workload:      workload("h1"),
 		Model:         domain.Model{Name: "qwen3.5:4b-mlx", Digest: "0123456789abcdef"},
 		Mode:          domain.CacheMiss,

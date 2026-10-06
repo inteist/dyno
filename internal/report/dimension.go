@@ -12,7 +12,7 @@ type Dimension string
 const (
 	ByModel    Dimension = "model"
 	ByDigest   Dimension = "digest"
-	ByOllama   Dimension = "ollama"
+	ByServer   Dimension = "server"
 	ByWorkload Dimension = "workload"
 	ByMode     Dimension = "mode"
 	ByTag      Dimension = "tag"
@@ -23,12 +23,12 @@ const (
 
 // Dimensions returns every dimension.
 func Dimensions() []Dimension {
-	return []Dimension{ByModel, ByDigest, ByOllama, ByWorkload, ByMode, ByTag, ByDay, ByWeek, BySession}
+	return []Dimension{ByModel, ByDigest, ByServer, ByWorkload, ByMode, ByTag, ByDay, ByWeek, BySession}
 }
 
 // DefaultDimensions keep apart all runs that are not comparable.
 func DefaultDimensions() []Dimension {
-	return []Dimension{ByModel, ByDigest, ByOllama, ByWorkload, ByMode}
+	return []Dimension{ByModel, ByDigest, ByServer, ByWorkload, ByMode}
 }
 
 // ParseDimension converts user input into a Dimension.

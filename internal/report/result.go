@@ -23,7 +23,7 @@ func Flags() []Flag { return []Flag{FlagFailed, FlagShort, FlagUnexpectedHit, Fl
 // Key holds the values of the grouping dimensions. Unused fields are empty.
 // Bucket holds the day ("2026-10-05") or the week ("2026-W41").
 type Key struct {
-	Model, Digest, Ollama, Workload, Mode, Tag, Bucket, Session string
+	Model, Digest, Server, Workload, Mode, Tag, Bucket, Session string
 }
 
 // Value returns the field of k that d fills.
@@ -33,8 +33,8 @@ func (k Key) Value(d Dimension) string {
 		return k.Model
 	case ByDigest:
 		return k.Digest
-	case ByOllama:
-		return k.Ollama
+	case ByServer:
+		return k.Server
 	case ByWorkload:
 		return k.Workload
 	case ByMode:

@@ -1,6 +1,6 @@
  token-rate report                             tab next metric · ? help · q quit
  2 runs · 0 valid · 1 session · 2026-09-28
- MODEL qwen3.5:4b-mlx · DIGEST a80c4f17acd5 · OLLAMA 0.34.0 · WORKLOAD 6e02f8a7…
+ MODEL qwen3.5:4b-mlx · DIGEST a80c4f17acd5 · SERVER 0.34.0 · WORKLOAD 6e02f8a7…
 
  N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
 ▸0             -           -        -       -  2 failed

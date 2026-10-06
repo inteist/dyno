@@ -93,7 +93,7 @@ func sampleRow(session domain.SessionID, at time.Time, p profile, f float64) rep
 	return report.Row{
 		Session:       session,
 		StartedAt:     at,
-		OllamaVersion: "0.34.0",
+		ServerVersion: "0.34.0",
 		Workload:      workload,
 		Model:         p.model,
 		Mode:          p.mode,

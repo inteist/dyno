@@ -97,7 +97,7 @@ func digestOf(model string) string {
 
 // key returns the key of a group with the default dimensions.
 func key(model string, mode domain.CacheMode) report.Key {
-	return report.Key{Model: model, Digest: domain.Model{Digest: digestOf(model)}.ShortDigest(), Ollama: "0.34.0", Workload: "21e02d1b0274", Mode: string(mode)}
+	return report.Key{Model: model, Digest: domain.Model{Digest: digestOf(model)}.ShortDigest(), Server: "0.34.0", Workload: "21e02d1b0274", Mode: string(mode)}
 }
 
 // allTimeReport is a report over many sessions with the default dimensions.

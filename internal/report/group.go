@@ -40,8 +40,8 @@ func setField(k *Key, d Dimension, r Row) {
 		k.Model = r.Model.Name
 	case ByDigest:
 		k.Digest = r.Model.ShortDigest()
-	case ByOllama:
-		k.Ollama = r.OllamaVersion
+	case ByServer:
+		k.Server = r.ServerVersion
 	case ByWorkload:
 		k.Workload = r.Workload.Hash()
 	case ByMode:
