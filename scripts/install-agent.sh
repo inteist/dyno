@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
-# Fills deploy/launchd/token-rate.plist.tmpl and loads it as a launchd agent.
+# Fills deploy/launchd/dyno.plist.tmpl and loads it as a launchd agent.
 #
 # Usage: scripts/install-agent.sh [--dry-run | --uninstall]
 #
 # Settings come from the environment. The defaults are in brackets:
-#   TOKEN_RATE_LABEL     agent label            [dev.token-rate.nightly]
-#   TOKEN_RATE_BIN       absolute binary path   [the token-rate on PATH, else ~/go/bin/token-rate]
-#   TOKEN_RATE_MODELS    models                 [qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b]
-#   TOKEN_RATE_RUNS      runs for each mode     [5]
-#   TOKEN_RATE_INTERVAL  pause between runs     [30s]
-#   TOKEN_RATE_CACHE     cache modes            [miss]
-#   TOKEN_RATE_TAG       session tag            [nightly]
-#   TOKEN_RATE_HOUR      start hour, 0-23       [3]
-#   TOKEN_RATE_MINUTE    start minute, 0-59     [0]
-#   TOKEN_RATE_DB        database path          [$XDG_DATA_HOME or ~/.local/share]/token-rate/bench.db
+#   DYNO_LABEL     agent label            [dev.dyno.nightly]
+#   DYNO_BIN       absolute binary path   [the dyno on PATH, else ~/go/bin/dyno]
+#   DYNO_MODELS    models                 [qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b]
+#   DYNO_RUNS      runs for each mode     [5]
+#   DYNO_INTERVAL  pause between runs     [30s]
+#   DYNO_CACHE     cache modes            [miss]
+#   DYNO_TAG       session tag            [nightly]
+#   DYNO_HOUR      start hour, 0-23       [3]
+#   DYNO_MINUTE    start minute, 0-59     [0]
+#   DYNO_DB        database path          [$XDG_DATA_HOME or ~/.local/share]/dyno/bench.db
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-template="$root/deploy/launchd/token-rate.plist.tmpl"
+template="$root/deploy/launchd/dyno.plist.tmpl"
 
-label="${TOKEN_RATE_LABEL:-dev.token-rate.nightly}"
-binary="${TOKEN_RATE_BIN:-$(command -v token-rate || echo "$HOME/go/bin/token-rate")}"
-models="${TOKEN_RATE_MODELS:-qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b}"
-runs="${TOKEN_RATE_RUNS:-5}"
-interval="${TOKEN_RATE_INTERVAL:-30s}"
-cache="${TOKEN_RATE_CACHE:-miss}"
-tag="${TOKEN_RATE_TAG:-nightly}"
-hour="${TOKEN_RATE_HOUR:-3}"
-minute="${TOKEN_RATE_MINUTE:-0}"
-db="${TOKEN_RATE_DB:-${XDG_DATA_HOME:-$HOME/.local/share}/token-rate/bench.db}"
-log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/token-rate"
+label="${DYNO_LABEL:-dev.dyno.nightly}"
+binary="${DYNO_BIN:-$(command -v dyno || echo "$HOME/go/bin/dyno")}"
+models="${DYNO_MODELS:-qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b}"
+runs="${DYNO_RUNS:-5}"
+interval="${DYNO_INTERVAL:-30s}"
+cache="${DYNO_CACHE:-miss}"
+tag="${DYNO_TAG:-nightly}"
+hour="${DYNO_HOUR:-3}"
+minute="${DYNO_MINUTE:-0}"
+db="${DYNO_DB:-${XDG_DATA_HOME:-$HOME/.local/share}/dyno/bench.db}"
+log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dyno"
 plist="$HOME/Library/LaunchAgents/$label.plist"
 domain="gui/$(id -u)"
 
@@ -67,11 +67,11 @@ uninstall() {
 }
 
 check() {
-    [[ "$binary" = /* ]] || die "TOKEN_RATE_BIN must be an absolute path, not $binary"
-    [[ "$db" = /* ]] || die "TOKEN_RATE_DB must be an absolute path, not $db"
-    [[ "$hour" =~ ^([01]?[0-9]|2[0-3])$ ]] || die "TOKEN_RATE_HOUR must be 0-23, not $hour"
-    [[ "$minute" =~ ^[0-5]?[0-9]$ ]] || die "TOKEN_RATE_MINUTE must be 0-59, not $minute"
-    [[ "$runs" =~ ^[1-9][0-9]*$ ]] || die "TOKEN_RATE_RUNS must be 1 or more, not $runs"
+    [[ "$binary" = /* ]] || die "DYNO_BIN must be an absolute path, not $binary"
+    [[ "$db" = /* ]] || die "DYNO_DB must be an absolute path, not $db"
+    [[ "$hour" =~ ^([01]?[0-9]|2[0-3])$ ]] || die "DYNO_HOUR must be 0-23, not $hour"
+    [[ "$minute" =~ ^[0-5]?[0-9]$ ]] || die "DYNO_MINUTE must be 0-59, not $minute"
+    [[ "$runs" =~ ^[1-9][0-9]*$ ]] || die "DYNO_RUNS must be 1 or more, not $runs"
 }
 
 install() {
