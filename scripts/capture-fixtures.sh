@@ -8,7 +8,7 @@ set -euo pipefail
 
 readonly MLX_MODEL="qwen3.5:4b-mlx" # MLX engine
 readonly GGUF_MODEL="lfm2.5:8b"     # GGUF engine
-readonly MISSING_MODEL="token-rate-missing:0b"
+readonly MISSING_MODEL="dyno-missing:0b"
 readonly KEEP_ALIVE="10m0s"
 readonly NUM_CTX=8192
 OUT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/internal/ollama/testdata"

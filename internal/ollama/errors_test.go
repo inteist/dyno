@@ -89,7 +89,7 @@ func TestErrorsOfAMissingModelWrapErrModelNotFound(t *testing.T) {
 				t.Fatalf("%s error = %v, want llm.ErrModelNotFound", m.name, err)
 			}
 			var status api.StatusError
-			if !errors.As(err, &status) || status.ErrorMessage != "model 'token-rate-missing:0b' not found" {
+			if !errors.As(err, &status) || status.ErrorMessage != "model 'dyno-missing:0b' not found" {
 				t.Errorf("%s error = %v, want the server message", m.name, err)
 			}
 		})
