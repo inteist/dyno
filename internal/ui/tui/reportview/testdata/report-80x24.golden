@@ -1,4 +1,4 @@
- token-rate report                             tab next metric · ? help · q quit
+ dyno report                                   tab next metric · ? help · q quit
  74 runs · 72 valid · 8 sessions · 2026-09-28 → 2026-10-05
  SERVER 0.34.0 · WORKLOAD 6e02f8a7d9fe
 

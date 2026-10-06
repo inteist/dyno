@@ -9,9 +9,6 @@ import (
 	"dyno/internal/ui/format"
 )
 
-// reportTitle starts the heading of the report command.
-const reportTitle = "token-rate report"
-
 // ReportUI prints a report as a table.
 type ReportUI struct{ out io.Writer }
 
@@ -21,7 +18,7 @@ func NewReportUI(out io.Writer) *ReportUI { return &ReportUI{out: out} }
 // Show prints a heading with the totals of r, the table of its groups, and
 // the statistics of each metric, or a line that no runs match.
 func (u *ReportUI) Show(_ context.Context, r report.Report) error {
-	if err := writeReport(u.out, reportTitle, r); err != nil {
+	if err := writeReport(u.out, format.ReportTitle, r); err != nil {
 		return fmt.Errorf("show report: %w", err)
 	}
 	if err := writeStatistics(u.out, r); err != nil {

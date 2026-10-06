@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"dyno/internal/domain"
 	"dyno/internal/report"
 	"dyno/internal/stats"
 )
@@ -156,6 +157,9 @@ const (
 	SessionTitle = "this session"
 	AllTimeTitle = "all sessions with this workload"
 )
+
+// ReportTitle starts the heading of the report command, in both UIs.
+const ReportTitle = domain.ToolName + " report"
 
 // NoRuns tells that a report has no groups.
 const NoRuns = "no runs match"

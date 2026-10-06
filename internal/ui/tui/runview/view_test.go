@@ -128,7 +128,7 @@ func TestTallFinalFrameGoesIntoTheHistory(t *testing.T) {
 	if lines := strings.Count(history, "\n") + 1; lines <= 24 {
 		t.Fatalf("the final frame has %d lines; the test needs more than 24", lines)
 	}
-	for _, want := range []string{"token-rate · session", "MODEL", "session " + string(session.ID) + " completed", format.SessionTitle, format.AllTimeTitle} {
+	for _, want := range []string{"dyno · session", "MODEL", "session " + string(session.ID) + " completed", format.SessionTitle, format.AllTimeTitle} {
 		if !strings.Contains(history, want) {
 			t.Errorf("the final frame lacks %q:\n%s", want, history)
 		}
@@ -154,7 +154,7 @@ func TestViewLines(t *testing.T) {
 		msgs []tea.Msg
 		want []string
 	}{
-		{"before the session", nil, []string{"token-rate\n", "starting the session", "q stop"}},
+		{"before the session", nil, []string{"dyno\n", "starting the session", "q stop"}},
 		{"step started", events(begin), []string{"qwen3.5:4b-mlx · miss · run 1 · starting", "step 1/8"}},
 		{"loading", events(append(begin, event.ModelLoading{Model: qwen})), []string{"run 1 · loading the model"}},
 		{"ready", events(append(begin, event.ModelReady{Model: qwen})), []string{"run 1 · starting"}},
@@ -310,7 +310,7 @@ func TestShortFinalFrameStaysLive(t *testing.T) {
 		t.Errorf("DoneMsg returned a command for a final frame that fits")
 	}
 	live := plain(m)
-	for _, want := range []string{"token-rate · session", "MODEL", format.SessionTitle, format.AllTimeTitle, "q quit"} {
+	for _, want := range []string{"dyno · session", "MODEL", format.SessionTitle, format.AllTimeTitle, "q quit"} {
 		if !strings.Contains(live, want) {
 			t.Errorf("the live frame lacks %q:\n%s", want, live)
 		}

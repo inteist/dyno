@@ -17,7 +17,6 @@ import (
 )
 
 const (
-	appName      = "token-rate"
 	defaultWidth = 80  // the width before the first WindowSizeMsg
 	margin       = " " // the space in front of each line
 	ellipsis     = "…"
@@ -135,7 +134,7 @@ func indent(lines []string, width int) string {
 // and the interval.
 func (m Model) title() string {
 	t := m.look.theme
-	name := t.Title.Render(appName)
+	name := t.Title.Render(domain.ToolName)
 	if !m.state.Started {
 		return name
 	}

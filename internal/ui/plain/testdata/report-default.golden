@@ -1,4 +1,4 @@
-token-rate report · 186 runs · 178 valid · 23 sessions · 2026-10-05 → 2026-11-02
+dyno report · 186 runs · 178 valid · 23 sessions · 2026-10-05 → 2026-11-02
 MODEL           DIGEST        SERVER  WORKLOAD      MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
 qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  21e02d1b0274  miss    60    56.2 ± 0.8       1,941    1,958     0 %  2 short
 qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  21e02d1b0274  prefix  60    56.0 ± 0.9          56       71    99 %

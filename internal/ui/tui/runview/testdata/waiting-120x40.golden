@@ -1,4 +1,4 @@
- token-rate · session 20261005T120212Z-K3F9A2 · prompt long · tag baseline · 2 runs · interval 30 s
+ dyno · session 20261005T120212Z-K3F9A2 · prompt long · tag baseline · 2 runs · interval 30 s
 
  MODEL             MISS        PREFIX      LAST RUN
  ! qwen3.5:4b-mlx  ━━━─── 1/2  ━━━━━━ 2/2  prefix: 56.0 tok/s · ttft 317 ms

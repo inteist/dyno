@@ -15,7 +15,6 @@ import (
 
 // Texts of the view.
 const (
-	title      = "token-rate report"
 	marker     = "▸"
 	indentText = " "
 	minHintGap = 2 // the least space between the title and the key hint
@@ -53,7 +52,7 @@ func (m Model) headerView() string {
 // titleView returns the title, the totals of the report, and the key hint
 // on one line. When they do not fit, the totals go to a second line.
 func (m Model) titleView() string {
-	name := m.theme.Title.Render(title)
+	name := m.theme.Title.Render(format.ReportTitle)
 	summary := m.theme.Muted.Render(format.Overview(m.report))
 	hint := m.help.ShortHelpView(m.keys.ShortHelp())
 	full := name + m.theme.Muted.Render(format.Separator) + summary
