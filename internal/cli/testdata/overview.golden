@@ -1,4 +1,4 @@
-Usage: token-rate <command> [options]
+Usage: dyno <command> [options]
 
 Commands:
   run       --models LIST [options]   execute a session
@@ -6,4 +6,4 @@ Commands:
   models    [--host URL]              list the local models
   version                             print the tool version
 
-Run 'token-rate <command> -h' for the options of a command.
+Run 'dyno <command> -h' for the options of a command.

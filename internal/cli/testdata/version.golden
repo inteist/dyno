@@ -1,6 +1,6 @@
-token-rate version: print the tool version
+dyno version: print the tool version
 
-Usage: token-rate version
+Usage: dyno version
 
 Options:
   -h, --help   show this help

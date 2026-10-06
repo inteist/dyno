@@ -1,6 +1,6 @@
-token-rate report: summarize the stored runs
+dyno report: summarize the stored runs
 
-Usage: token-rate report [options]
+Usage: dyno report [options]
 
 Options:
   --cache modes        comma-separated cache modes: miss, continue, prefix

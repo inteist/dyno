@@ -12,6 +12,8 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"dyno/internal/domain"
 )
 
 // ErrUsage means that the arguments are wrong. Parse has printed the usage
@@ -210,19 +212,19 @@ func isSet(fs *flag.FlagSet, name string) bool {
 
 // writeOverview prints the usage text of the program.
 func writeOverview(w io.Writer) {
-	fmt.Fprint(w, "Usage: token-rate <command> [options]\n\nCommands:\n")
+	fmt.Fprintf(w, "Usage: %s <command> [options]\n\nCommands:\n", domain.ToolName)
 	tw := tabwriter.NewWriter(w, 0, 0, 3, ' ', 0)
 	for _, c := range commands() {
 		fmt.Fprintf(tw, "  %s\t%s\t%s\n", c.name, c.args, c.summary)
 	}
 	_ = tw.Flush()
-	fmt.Fprint(w, "\nRun 'token-rate <command> -h' for the options of a command.\n")
+	fmt.Fprintf(w, "\nRun '%s <command> -h' for the options of a command.\n", domain.ToolName)
 }
 
 // writeUsage prints the usage text of the command with the flags of fs.
 func (c commandSpec) writeUsage(w io.Writer, fs *flag.FlagSet) {
-	fmt.Fprintf(w, "token-rate %s: %s\n\nUsage: token-rate %s\n\nOptions:\n",
-		c.name, c.summary, strings.TrimSpace(c.name+" "+c.args))
+	fmt.Fprintf(w, "%[1]s %[2]s: %[3]s\n\nUsage: %[1]s %[4]s\n\nOptions:\n",
+		domain.ToolName, c.name, c.summary, strings.TrimSpace(c.name+" "+c.args))
 	tw := tabwriter.NewWriter(w, 0, 0, 3, ' ', 0)
 	fs.VisitAll(func(f *flag.Flag) {
 		arg, usage := flag.UnquoteUsage(f)

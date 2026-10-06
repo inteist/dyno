@@ -53,14 +53,14 @@ func TestParseHelp(t *testing.T) {
 		args []string
 		want string
 	}{
-		{nil, "Usage: token-rate <command>"},
-		{[]string{"help"}, "Usage: token-rate <command>"},
-		{[]string{"-h"}, "Usage: token-rate <command>"},
-		{[]string{"--help"}, "Usage: token-rate <command>"},
-		{[]string{"run", "-h"}, "Usage: token-rate run --models LIST"},
-		{[]string{"report", "--help"}, "Usage: token-rate report [options]"},
-		{[]string{"models", "-help"}, "Usage: token-rate models [--host URL]"},
-		{[]string{"version", "-h"}, "Usage: token-rate version"},
+		{nil, "Usage: dyno <command>"},
+		{[]string{"help"}, "Usage: dyno <command>"},
+		{[]string{"-h"}, "Usage: dyno <command>"},
+		{[]string{"--help"}, "Usage: dyno <command>"},
+		{[]string{"run", "-h"}, "Usage: dyno run --models LIST"},
+		{[]string{"report", "--help"}, "Usage: dyno report [options]"},
+		{[]string{"models", "-help"}, "Usage: dyno models [--host URL]"},
+		{[]string{"version", "-h"}, "Usage: dyno version"},
 	}
 	for _, tt := range tests {
 		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestUsageErrorPrintedOnce(t *testing.T) {
 			if !errors.Is(err, ErrUsage) || !strings.HasPrefix(err.Error(), tt.message) {
 				t.Fatalf("error = %v, want ErrUsage with %q", err, tt.message)
 			}
-			if strings.Count(stderr, "Usage: token-rate "+tt.args[0]) != 1 {
+			if strings.Count(stderr, "Usage: dyno "+tt.args[0]) != 1 {
 				t.Errorf("stderr = %q, want the usage text once", stderr)
 			}
 			if strings.Contains(stderr, tt.message) {
@@ -196,7 +196,7 @@ func TestUnknownHome(t *testing.T) {
 		if !errors.Is(err, ErrUsage) || !strings.Contains(err.Error(), "set --db or TOKEN_RATE_DB") {
 			t.Errorf("%s without a home folder: error = %v", args[0], err)
 		}
-		if !strings.Contains(stderr, "Usage: token-rate "+args[0]) {
+		if !strings.Contains(stderr, "Usage: dyno "+args[0]) {
 			t.Errorf("%s without a home folder printed no usage:\n%s", args[0], stderr)
 		}
 	}

@@ -1,6 +1,6 @@
-token-rate models: list the local models
+dyno models: list the local models
 
-Usage: token-rate models [--host URL]
+Usage: dyno models [--host URL]
 
 Options:
   --host URL   Ollama server URL (default: OLLAMA_HOST or http://127.0.0.1:11434)

@@ -1,6 +1,6 @@
-token-rate run: execute a session
+dyno run: execute a session
 
-Usage: token-rate run --models LIST [options]
+Usage: dyno run --models LIST [options]
 
 Options:
   --cache modes                cache modes: miss, continue, prefix (default miss)
