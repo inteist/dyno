@@ -1,12 +1,12 @@
-# token-rate: implementation plan
+# dyno: implementation plan
 
-|            |                                                              |
-| ---------- | ------------------------------------------------------------ |
-| Status     | Implemented on 2026-10-05; section 19 lists the changes      |
-| Date       | 2026-10-05                                                   |
-| Owner      | Max                                                          |
-| Target     | Go 1.27, Ollama 0.34.0, macOS on Apple Silicon               |
-| Repository | `~/dev/token-rate`, branch `main`, no commits yet, no remote |
+|            |                                                                |
+| ---------- | -------------------------------------------------------------- |
+| Status     | Implemented on 2026-10-05; sections 19 and 20 list the changes |
+| Date       | 2026-10-05                                                     |
+| Owner      | Max                                                            |
+| Target     | Go 1.27, Ollama 0.34.0, macOS on Apple Silicon                 |
+| Repository | `~/dev/token-rate`, branch `main`, no remote                   |
 
 ## Contents
 
@@ -29,10 +29,11 @@
 17. [Risks](#17-risks)
 18. [Open decisions](#18-open-decisions)
 19. [Implementation notes](#19-implementation-notes)
+20. [Rename and other LLM servers](#20-rename-and-other-llm-servers)
 
 ## 1. Summary
 
-`token-rate` is a command-line tool. It measures how fast local models generate
+`dyno` is a command-line tool. It measures how fast local models generate
 tokens through Ollama. It also measures the effect of the prompt cache.
 
 The tool runs the selected models one after the other. It repeats each
@@ -48,7 +49,7 @@ This plan uses each term below with one meaning only.
 
 | Term         | Meaning                                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| Session      | One execution of `token-rate run`.                                                                                        |
+| Session      | One execution of `dyno run`.                                                                                              |
 | Step         | One scheduled measurement: a model, a cache mode, and a run number.                                                       |
 | Run          | The measured request of a step. `--runs N` sets the number of runs for each model and each cache mode.                    |
 | Exchange     | One chat request and its measured response. An exchange is a warm-up, a primer, or a run. The store keeps every exchange. |
@@ -192,7 +193,7 @@ The `main` branch of ntcharts still uses Bubble Tea v1. The tool must import
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ cmd/token-rate        main: cli.Parse → app.<command> → exit code    │
+│ cmd/dyno              main: cli.Parse → app.<command> → exit code    │
 ├──────────────────────────────────────────────────────────────────────┤
 │ internal/app          composition root, one file for each command    │
 ├───────────────────────────────┬──────────────────────────────────────┤
@@ -218,8 +219,8 @@ The `main` branch of ntcharts still uses Bubble Tea v1. The tool must import
 ### 7.2 Package layout
 
 ```text
-token-rate/
-├── cmd/token-rate/main.go           entry point: parse, dispatch, exit code
+dyno/
+├── cmd/dyno/main.go           entry point: parse, dispatch, exit code
 ├── internal/
 │   ├── app/                         composition root
 │   │   ├── run.go                   wires runner, store, client, SessionUI
@@ -269,7 +270,7 @@ token-rate/
 │   │       ├── runview/             state.go (pure reducer), model.go, view.go, keys.go
 │   │       └── reportview/          model.go, view.go, charts.go, keys.go
 │   └── archtest/imports_test.go     checks the dependency rules
-├── deploy/launchd/token-rate.plist.tmpl
+├── deploy/launchd/dyno.plist.tmpl
 ├── scripts/
 │   ├── capture-fixtures.sh          records chat streams for the adapter tests
 │   └── install-agent.sh             fills the plist template and loads it
@@ -295,7 +296,7 @@ token-rate/
 | `ui/plain`, `ui/tui/...` | `domain`, `event`, `report`, `stats`           | `bench`, adapters                 |
 | `cli`                    | `domain`, `llm`, `prompt`, `bench`, `report`   | adapters, UI                      |
 | `app`                    | all packages above                             | none                              |
-| `cmd/token-rate`         | `cli`, `app`                                   | none                              |
+| `cmd/dyno`               | `cli`, `app`                                   | none                              |
 
 The test `internal/archtest` reads `go list -json ./...`. It fails on a
 forbidden import. Only `ollama`, `store/sqlite`, and `ui/tui` import third-party
@@ -1518,7 +1519,7 @@ func Parse(args []string, stderr io.Writer) (Command, error)
 type Command interface{ command() }
 
 type Common struct {
-	DB      string // --db, TOKEN_RATE_DB, or the default path
+	DB      string // --db, DYNO_DB, or the default path
 	Host    string // --host, OLLAMA_HOST, or http://127.0.0.1:11434
 	LogFile string // --log
 }
@@ -1730,13 +1731,13 @@ The report shows the number of excluded runs for each group and flag.
 
 ### 11.1 File and connection
 
-- Default path: `$XDG_DATA_HOME/token-rate/bench.db`. Without `XDG_DATA_HOME`,
-  the path is `~/.local/share/token-rate/bench.db`.
-- `--db` and `TOKEN_RATE_DB` change the path. The path must be absolute under
+- Default path: `$XDG_DATA_HOME/dyno/bench.db`. Without `XDG_DATA_HOME`,
+  the path is `~/.local/share/dyno/bench.db`.
+- `--db` and `DYNO_DB` change the path. The path must be absolute under
   `launchd`, so the default path is absolute.
 - Pragmas: `foreign_keys(1)`, `journal_mode(WAL)`, `busy_timeout(5000)`,
   `synchronous(NORMAL)`.
-- `SetMaxOpenConns(1)`: one writer in the process. WAL lets `token-rate report`
+- `SetMaxOpenConns(1)`: one writer in the process. WAL lets `dyno report`
   read from a second process during a session.
 - Times are RFC 3339 text in UTC. Durations are integer nanoseconds.
 
@@ -1843,10 +1844,10 @@ Backup: `sqlite3 bench.db ".backup bench-backup.db"`.
 ### 12.1 Commands
 
 ```text
-token-rate run      --models LIST [options]      execute a session
-token-rate report   [options]                    summarize the stored runs
-token-rate models   [--host URL]                 list the local models
-token-rate version                               print the tool version
+dyno run      --models LIST [options]      execute a session
+dyno report   [options]                    summarize the stored runs
+dyno models   [--host URL]                 list the local models
+dyno version                               print the tool version
 ```
 
 ### 12.2 `run` options
@@ -1883,14 +1884,14 @@ token-rate version                               print the tool version
 
 ```sh
 # Decode benchmark, short prompt
-token-rate run --models qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b --runs 5 --interval 30s
+dyno run --models qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b --runs 5 --interval 30s
 
 # Cache comparison, long prompt chosen automatically
-token-rate run --models qwen3.5:4b-mlx,lfm2.5:8b --cache miss,continue,prefix --runs 3 --tag cache-baseline
+dyno run --models qwen3.5:4b-mlx,lfm2.5:8b --cache miss,continue,prefix --runs 3 --tag cache-baseline
 
 # All-time report, and a daily trend for one model
-token-rate report
-token-rate report --model lfm2.5:8b --group model,mode,day --since 2026-10-01
+dyno report
+dyno report --model lfm2.5:8b --group model,mode,day --since 2026-10-01
 ```
 
 ### 12.5 Environment variables
@@ -1898,7 +1899,7 @@ token-rate report --model lfm2.5:8b --group model,mode,day --since 2026-10-01
 | Variable        | Effect                                    |
 | --------------- | ----------------------------------------- |
 | `OLLAMA_HOST`   | Server address, if `--host` is not set.   |
-| `TOKEN_RATE_DB` | Database path, if `--db` is not set.      |
+| `DYNO_DB`       | Database path, if `--db` is not set.      |
 | `XDG_DATA_HOME` | Base folder of the default database path. |
 
 ## 13. TUI
@@ -1909,7 +1910,7 @@ The run view is inline, not on the alternate screen. Thus the final summary
 stays in the terminal history.
 
 ```text
- token-rate · session 20261005T140212Z-K3F9A2 · prompt long · 3 runs · interval 30s · tag baseline
+ dyno · session 20261005T140212Z-K3F9A2 · prompt long · 3 runs · interval 30s · tag baseline
 
  MODEL             MISS          CONTINUE      PREFIX        LAST RUN
  ✓ qwen3.5:4b-mlx  ━━━━━━ 3/3    ━━━━━━ 3/3    ━━━━━━ 3/3    56.0 tok/s · ttft 71 ms
@@ -1938,7 +1939,7 @@ The numbers in the mockup are examples.
 The report view uses the alternate screen.
 
 ```text
- token-rate report · 412 runs · 23 sessions · 2026-10-05 → 2026-11-02         tab metric · q quit
+ dyno report · 412 runs · 23 sessions · 2026-10-05 → 2026-11-02         tab metric · q quit
  MODEL             MODE       N   DECODE tok/s   PREFILL ms   TTFT ms   CACHED   OLLAMA
 ▸qwen3.5:4b-mlx    miss      60   56.2 ± 0.8          1,941     1,958      0 %   0.34.0
  qwen3.5:4b-mlx    continue  60   56.0 ± 0.9             56        71     99 %   0.34.0
@@ -1999,21 +2000,21 @@ The report view uses the alternate screen.
 
 ### 14.4 Acceptance checks
 
-| ID  | Check                                                                                                                                     | Expected result                                                                                                                   |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| A1  | `token-rate run --models qwen3.5:4b-mlx --runs 3 --plain`, then `ollama run qwen3.5:4b-mlx --think=false --verbose` with the same prompt. | The two decode rates differ by less than 5 %.                                                                                     |
-| A2  | `token-rate run --models qwen3.5:4b-mlx,lfm2.5:8b --cache miss,continue,prefix --runs 3`                                                  | `miss` runs: cached share at most 1 %. `continue` runs: at least 95 %. `prefix` runs: at least 95 % on MLX and about 75 % on LFM. |
-| A3  | Stop a session during run 2, in plain mode with Ctrl-C and in TUI mode with `q q`.                                                        | Status `aborted`. All exchanges before the stop are in the store. No partial exchange. Exit code 130.                             |
-| A4  | `token-rate report --plain` and the SQL query of 11.5.                                                                                    | The same medians.                                                                                                                 |
-| A5  | Both TUI views at 80×24 and at full screen, on a light and a dark background.                                                             | No broken layout. Readable colors.                                                                                                |
-| A6  | Install the `launchd` agent and start it once with `launchctl kickstart`.                                                                 | A new session with the tag `nightly`. A log file without errors.                                                                  |
+| ID  | Check                                                                                                                               | Expected result                                                                                                                   |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | `dyno run --models qwen3.5:4b-mlx --runs 3 --plain`, then `ollama run qwen3.5:4b-mlx --think=false --verbose` with the same prompt. | The two decode rates differ by less than 5 %.                                                                                     |
+| A2  | `dyno run --models qwen3.5:4b-mlx,lfm2.5:8b --cache miss,continue,prefix --runs 3`                                                  | `miss` runs: cached share at most 1 %. `continue` runs: at least 95 %. `prefix` runs: at least 95 % on MLX and about 75 % on LFM. |
+| A3  | Stop a session during run 2, in plain mode with Ctrl-C and in TUI mode with `q q`.                                                  | Status `aborted`. All exchanges before the stop are in the store. No partial exchange. Exit code 130.                             |
+| A4  | `dyno report --plain` and the SQL query of 11.5.                                                                                    | The same medians.                                                                                                                 |
+| A5  | Both TUI views at 80×24 and at full screen, on a light and a dark background.                                                       | No broken layout. Readable colors.                                                                                                |
+| A6  | Install the `launchd` agent and start it once with `launchctl kickstart`.                                                           | A new session with the tag `nightly`. A log file without errors.                                                                  |
 
 ## 15. Tooling and conventions
 
 ### 15.1 Module
 
 ```text
-module token-rate
+module dyno
 
 go 1.27
 
@@ -2038,10 +2039,10 @@ tool honnef.co/go/tools/cmd/staticcheck
 default: check
 
 build:
-    go build -o bin/token-rate ./cmd/token-rate
+    go build -o bin/dyno ./cmd/dyno
 
 install:
-    go install ./cmd/token-rate
+    go install ./cmd/dyno
 
 test:
     go test -race ./...
@@ -2068,7 +2069,7 @@ agent-install:
     ./scripts/install-agent.sh
 
 agent-uninstall:
-    launchctl bootout gui/$(id -u)/dev.token-rate.nightly
+    launchctl bootout gui/$(id -u)/dev.dyno.nightly
 ```
 
 `.gitignore`: `/bin/`, `*.db`, `*.db-wal`, `*.db-shm`, `cover.out`.
@@ -2102,7 +2103,7 @@ passing exit criterion.
 
 #### Phase 0: scaffold
 
-- [ ] Run `go mod init token-rate`. Add the modules of 15.1 and the
+- [ ] Run `go mod init dyno`. Add the modules of 15.1 and the
       `staticcheck` tool.
 - [ ] Make the folders of 7.2 with a `doc.go` in each package.
 - [ ] Add the `justfile`, `.gitignore`, and a short `README.md`.
@@ -2155,7 +2156,7 @@ Exit criterion: all runner behaviors of 9.3 have passing tests.
 
 - [ ] `report`: `Classify`, `Build`, grouping, buckets, and daily series.
 - [ ] `cli` for `run`, `report`, `models`, and `version`.
-- [ ] `app` wiring and `cmd/token-rate/main.go` with the exit codes of 7.6.
+- [ ] `app` wiring and `cmd/dyno/main.go` with the exit codes of 7.6.
 - [ ] `ui/plain`: `SessionUI`, `ReportUI`, and the model table, with golden
       tests.
 - [ ] README: installation, usage, data location, and the measurement protocol.
@@ -2189,8 +2190,8 @@ Exit criterion: A5 passes for the report view.
 
 #### Phase 8
 
-- [ ] `deploy/launchd/token-rate.plist.tmpl` with `StartCalendarInterval`,
-      `--plain`, and the log path `~/.local/state/token-rate/`.
+- [ ] `deploy/launchd/dyno.plist.tmpl` with `StartCalendarInterval`,
+      `--plain`, and the log path `~/.local/state/dyno/`.
 - [ ] `scripts/install-agent.sh` fills the template and runs
       `launchctl bootstrap`.
 - [ ] README section about scheduled sessions. When the Mac sleeps at the start
@@ -2233,13 +2234,13 @@ Exit criterion: A6 passes.
 
 ## 18. Open decisions
 
-| ID  | Question                                                                             | Default in this plan                                       |
-| --- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| O1  | Module path: `token-rate`, or a hosted path such as `github.com/<owner>/token-rate`? | `token-rate`. Change it when the repository gets a remote. |
-| O2  | Database location.                                                                   | `~/.local/share/token-rate/bench.db`                       |
-| O3  | Number of `prefix` primers, and the answer length of the `continue` primer.          | 2 primers, 64 tokens                                       |
-| O4  | Default report grouping.                                                             | `model,digest,ollama,workload,mode`                        |
-| O5  | Time and Mac state for the scheduled session.                                        | 03:00 every night, with the Ollama app running             |
+| ID  | Question                                                                    | Default in this plan                                 |
+| --- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
+| O1  | Module path: `dyno`, or a hosted path such as `github.com/<owner>/dyno`?    | `dyno`. Change it when the repository gets a remote. |
+| O2  | Database location.                                                          | `~/.local/share/dyno/bench.db`                       |
+| O3  | Number of `prefix` primers, and the answer length of the `continue` primer. | 2 primers, 64 tokens                                 |
+| O4  | Default report grouping.                                                    | `model,digest,ollama,workload,mode`                  |
+| O5  | Time and Mac state for the scheduled session.                               | 03:00 every night, with the Ollama app running       |
 
 ## 19. Implementation notes
 
@@ -2291,6 +2292,9 @@ correct.
 
 ### 19.3 Results
 
+The checks ran before the rename of section 20.1, under the name
+`token-rate`.
+
 | Check                       | Result                                                                                                                                                       |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `just check`                | Passes: gofmt, vet, staticcheck v0.8.1 on Go 1.27.1, and `go test -race ./...`.                                                                               |
@@ -2328,7 +2332,7 @@ the defects were reproduced before the change.
 
 One effect remains outside the code of the tool: in `tmux`, Bubble Tea
 v2.0.10 draws an inline frame that changes its height below the old frame,
-and the old frame stays in the history. A test program without token-rate
+and the old frame stays in the history. A test program without dyno
 shows the same effect. Thus the last progress frame stays above the final
 frame.
 
@@ -2347,3 +2351,91 @@ frame.
 | S6   | The fixture script used port 11434 for a URL with a scheme.                                           | The script uses the ports of `OLLAMA_HOST`: 80 for `http://` and 443 for `https://`.                                                            |
 | S7   | The print delay of 100 ms depended on time.                                                           | A comparison in `tmux` showed no difference without the delay, so the delay is gone.                                                            |
 
+## 20. Rename and other LLM servers
+
+Where this section differs from an earlier section, this section is correct.
+
+### 20.1 The name `dyno`
+
+The tool was called `token-rate` until 2026-10-05. The new name applies to:
+
+- the module (`dyno`), the binary, and the folder `cmd/dyno`;
+- the default database `$XDG_DATA_HOME/dyno/bench.db` and the variable
+  `DYNO_DB`;
+- the launchd label `dev.dyno.nightly`, the template
+  `deploy/launchd/dyno.plist.tmpl`, the log folder
+  `~/.local/state/dyno/`, and the `DYNO_*` settings of
+  `scripts/install-agent.sh`.
+
+The tool does not read the old names and gives no warning. The README
+section "Upgrade from token-rate" lists the steps. Two facts matter there:
+the database uses WAL mode, so a move of `bench.db` alone can lose data in
+`bench.db-wal`; and migration `0002` works in one direction only, so the copy
+of the old file is the only way back.
+
+The tool name is the constant `domain.ToolName`, and the database variable
+is `cli.dbVar`. Tests keep the literal names, because they pin the visible
+text.
+
+### 20.2 Server-neutral names
+
+The core names the server version without the name of one server:
+
+| Before                         | After                          |
+| ------------------------------ | ------------------------------ |
+| `domain.Session.OllamaVersion` | `domain.Session.ServerVersion` |
+| `report.Row.OllamaVersion`     | `report.Row.ServerVersion`     |
+| `report.ByOllama`, `ollama`    | `report.ByServer`, `server`    |
+| `report.Key.Ollama`            | `report.Key.Server`            |
+| column `OLLAMA`                | column `SERVER`                |
+| `sessions.ollama_version`      | `sessions.server_version`      |
+
+Migration `0002_server_version.sql` renames the column and keeps the
+values. Sections 8.1, 8.6, 9.6, 11, and 12 show the old names.
+
+### 20.3 Adding a server
+
+Only Ollama is supported. This section lists what a second server needs, so
+that the work does not start from nothing. Do not build these parts before
+a second server exists: the right shape depends on what that server can do.
+
+What already supports a second server:
+
+- The core reaches the server only through `llm.Client`. Only
+  `internal/ollama` imports `github.com/ollama/ollama/api`, and `archtest`
+  enforces this.
+- Only `internal/app/deps.go` creates the client.
+- The core tests use `llmtest.Fake` and need no server.
+
+What must change:
+
+| Place                        | Ollama assumption                                             | Change                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `llm.Client`                 | Every server can load, unload, and list the running models.   | Split `Load`, `Unload`, and `Running` into a lifecycle interface. Add capabilities that `bench` checks. |
+| `bench` lifecycle            | `prefix` mode empties the cache with a reload.                | Use a cache reset of the server, or reject `prefix` mode.                                               |
+| `domain.Session`, `sessions` | One kind of server.                                           | Add a `backend` field and column. Old rows get `ollama`. Add `backend` to the default grouping.         |
+| `domain.NormalizeModelName`  | A name without a tag means `:latest`.                         | Move the rule into the Ollama adapter.                                                                  |
+| `report/validity.go`         | 16 template tokens from the cache; MLX reports 0.1 s of load. | Set the limits for each backend. Skip a rule when the server does not report its value.                 |
+| `cli`                        | `--host` and `OLLAMA_HOST`.                                   | Add `--backend` with a default address for each backend.                                                |
+| new package                  |                                                               | An adapter with recorded streams, a capture script, and an `archtest` rule.                             |
+
+What a second server can cost:
+
+1. An OpenAI-compatible API gives token counts but no server timings. The
+   rates then come from the stream timing of the client, which includes the
+   network and the chunk size. Such rates must have a mark, and the report
+   must not group them with server-timed rates.
+2. `continue`, `prefix`, and the `unexpected-hit` rule need a cached-token
+   count and a way to empty the cache. Not every server has them.
+3. `llama-server` and vLLM set the context size and the model at their
+   start. The tool can only check `--num-ctx`. A session with more than one
+   model needs a proxy, for example `llama-swap`.
+4. The model digest groups the runs. Other servers give only a file name or
+   a model key.
+5. Each server needs live experiments like those of 19.1, and its own
+   fixtures.
+
+The best second server is `llama-server`: its `timings` object has
+`prompt_n`, `prompt_ms`, `predicted_n`, `predicted_ms`, and `cache_n`, which
+give the same metrics as Ollama. These field names are not checked against a
+live server.
