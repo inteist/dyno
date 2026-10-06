@@ -1,6 +1,6 @@
-# token-rate
+# dyno
 
-`token-rate` measures how fast local models generate tokens through
+`dyno` measures how fast local models generate tokens through
 [Ollama](https://ollama.com), and how much the prompt cache saves. It runs the
 models that you select one after the other, repeats each measurement, waits
 between runs, and writes every request to a SQLite file. The `report` command
@@ -12,8 +12,8 @@ is not a terminal (a pipe, `launchd`), or with `--plain`, it writes plain text.
 ## Install
 
 ```sh
-just install          # go install ./cmd/token-rate
-token-rate version
+just install          # go install ./cmd/dyno
+dyno version
 ```
 
 Requirements: Go 1.27 to build, and an Ollama server (0.34 or later) with the
@@ -23,17 +23,17 @@ models pulled. The default server address is `http://127.0.0.1:11434`.
 
 ```sh
 # Decode speed with the short prompt: 5 runs per model, 30 s apart
-token-rate run --models qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b --runs 5 --interval 30s
+dyno run --models qwen3.5:9b-mlx,qwen3.5:4b-mlx,lfm2.5:8b --runs 5 --interval 30s
 
 # Cache comparison; the long prompt is chosen automatically
-token-rate run --models qwen3.5:4b-mlx,lfm2.5:8b --cache miss,continue,prefix --runs 3 --tag cache-baseline
+dyno run --models qwen3.5:4b-mlx,lfm2.5:8b --cache miss,continue,prefix --runs 3 --tag cache-baseline
 
 # All-time report, and a daily trend for one model
-token-rate report
-token-rate report --model lfm2.5:8b --group model,mode,day --since 2026-10-01
+dyno report
+dyno report --model lfm2.5:8b --group model,mode,day --since 2026-10-01
 
 # Local models and their details
-token-rate models
+dyno models
 ```
 
 Stop a session with `q q` or `ctrl+c` in the TUI, or with Ctrl-C in plain mode.
@@ -70,7 +70,7 @@ selects `lfm2.5:latest`.
 | ------------------------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------- |
 | `--since`, `--until`                                   | none                                | `YYYY-MM-DD` (local time, `--until` includes the day) or RFC 3339.                       |
 | `--model`, `--cache`, `--prompt`, `--tag`, `--session` | none                                | Comma-separated filters.                                                                 |
-| `--group`                                              | `model,digest,ollama,workload,mode` | Any of `model`, `digest`, `ollama`, `workload`, `mode`, `tag`, `day`, `week`, `session`. |
+| `--group`                                              | `model,digest,server,workload,mode` | Any of `model`, `digest`, `server`, `workload`, `mode`, `tag`, `day`, `week`, `session`. |
 | `--plain`                                              | off                                 | Plain table, also in a terminal.                                                         |
 
 The default grouping never mixes runs of different model digests, server
@@ -149,9 +149,9 @@ API. Mark a changed setup with `--tag`.
 
 ## Data
 
-The database is `$XDG_DATA_HOME/token-rate/bench.db`, or
-`~/.local/share/token-rate/bench.db` without `XDG_DATA_HOME`. `--db` and
-`TOKEN_RATE_DB` change the path. The file uses WAL mode, so `token-rate report`
+The database is `$XDG_DATA_HOME/dyno/bench.db`, or
+`~/.local/share/dyno/bench.db` without `XDG_DATA_HOME`. `--db` and
+`DYNO_DB` change the path. The file uses WAL mode, so `dyno report`
 can read during a session.
 
 The tables are `sessions`, `models`, and `exchanges`. An exchange is one
@@ -166,7 +166,7 @@ SELECT x.model_name, x.cache_mode, COUNT(*) AS n,
 FROM exchanges x
 JOIN sessions s ON s.id = x.session_id
 WHERE x.kind = 'run' AND x.error IS NULL AND x.done_reason = 'length'
-GROUP BY x.model_name, x.model_digest, s.ollama_version, s.workload_hash, x.cache_mode;
+GROUP BY x.model_name, x.model_digest, s.server_version, s.workload_hash, x.cache_mode;
 ```
 
 The macOS `sqlite3` has `median()`. Back up the file with
@@ -180,15 +180,50 @@ session every night at 03:00 with the tag `nightly`:
 ```sh
 just install
 just agent-install                                  # defaults
-TOKEN_RATE_CACHE=miss,continue,prefix TOKEN_RATE_HOUR=2 just agent-install
+DYNO_CACHE=miss,continue,prefix DYNO_HOUR=2 just agent-install
 scripts/install-agent.sh --dry-run                  # print the plist only
-launchctl kickstart gui/$(id -u)/dev.token-rate.nightly   # start it now
+launchctl kickstart gui/$(id -u)/dev.dyno.nightly   # start it now
 just agent-uninstall
 ```
 
 The script header lists all settings. The logs go to
-`~/.local/state/token-rate/`. The Ollama app must run at the start time. When
+`~/.local/state/dyno/`. The Ollama app must run at the start time. When
 the Mac sleeps at the start time, `launchd` starts the job after the wake.
+
+## Upgrade from token-rate
+
+The tool was called `token-rate`. `dyno` does not read the old names, and it
+gives no warning:
+
+| Old                                     | New                               |
+| --------------------------------------- | --------------------------------- |
+| `~/.local/share/token-rate/bench.db`    | `~/.local/share/dyno/bench.db`    |
+| `TOKEN_RATE_DB`                         | `DYNO_DB`                         |
+| `TOKEN_RATE_*` settings of the agent    | `DYNO_*`                          |
+| the agent `dev.token-rate.nightly`      | `dev.dyno.nightly`                |
+| the logs in `~/.local/state/token-rate` | the logs in `~/.local/state/dyno` |
+
+Copy the database before the first `dyno` command. The file uses WAL mode,
+so `mv` or `cp` of `bench.db` alone can lose the runs in `bench.db-wal`.
+`.backup` copies all of them. `dyno` changes the schema of the file, and
+`token-rate` cannot open it after that, so keep the old file as a backup.
+
+```sh
+mkdir -p ~/.local/share/dyno
+sqlite3 ~/.local/share/token-rate/bench.db ".backup $HOME/.local/share/dyno/bench.db"
+```
+
+Then replace the binary and the agent:
+
+```sh
+DYNO_LABEL=dev.token-rate.nightly scripts/install-agent.sh --uninstall   # the old agent
+rm ~/go/bin/token-rate
+just install
+just agent-install                                  # with DYNO_* instead of TOKEN_RATE_*
+```
+
+With `XDG_DATA_HOME` or `XDG_STATE_HOME` set, the folders are below those
+paths.
 
 ## Development
 
@@ -199,6 +234,6 @@ just golden     # rewrite the golden files: UPDATE_GOLDEN=1 go test ./...
 just fixtures   # record new Ollama streams for the adapter tests
 ```
 
-The design and the plan are in `plans/token-rate-implementation-plan.md`.
+The design and the plan are in `plans/dyno-implementation-plan.md`.
 `internal/archtest` fails when a package imports across the permitted
 directions.
