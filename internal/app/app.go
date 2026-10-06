@@ -9,6 +9,7 @@ import (
 
 	"dyno/internal/bench"
 	"dyno/internal/cli"
+	"dyno/internal/domain"
 	"dyno/internal/event"
 	"dyno/internal/report"
 )
@@ -72,9 +73,9 @@ func Fail(w io.Writer, err error) int {
 	switch {
 	case err == nil || errors.Is(err, flag.ErrHelp):
 	case code == ExitStopped:
-		fmt.Fprintln(w, "token-rate: stopped")
+		fmt.Fprintf(w, "%s: stopped\n", domain.ToolName)
 	default:
-		fmt.Fprintf(w, "token-rate: %v\n", err)
+		fmt.Fprintf(w, "%s: %v\n", domain.ToolName, err)
 	}
 	return code
 }

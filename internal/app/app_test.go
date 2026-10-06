@@ -184,7 +184,7 @@ func TestVersion(t *testing.T) {
 	if err := Execute(context.Background(), cli.VersionCommand{}, IO{Out: &out}); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.HasPrefix(out.String(), "token-rate ") {
+	if !strings.HasPrefix(out.String(), "dyno ") {
 		t.Errorf("version output = %q", out.String())
 	}
 }
@@ -198,10 +198,10 @@ func TestExitCodeAndFail(t *testing.T) {
 	}{
 		{nil, ExitOK, ""},
 		{flag.ErrHelp, ExitOK, ""},
-		{fmt.Errorf("run: %w", cli.ErrUsage), ExitUsage, "token-rate: run: wrong arguments\n"},
-		{fmt.Errorf("%w: runs", bench.ErrInvalidOptions), ExitUsage, "token-rate: invalid options: runs\n"},
-		{fmt.Errorf("run 1: %w", context.Canceled), ExitStopped, "token-rate: stopped\n"},
-		{errors.New("boom"), ExitFailure, "token-rate: boom\n"},
+		{fmt.Errorf("run: %w", cli.ErrUsage), ExitUsage, "dyno: run: wrong arguments\n"},
+		{fmt.Errorf("%w: runs", bench.ErrInvalidOptions), ExitUsage, "dyno: invalid options: runs\n"},
+		{fmt.Errorf("run 1: %w", context.Canceled), ExitStopped, "dyno: stopped\n"},
+		{errors.New("boom"), ExitFailure, "dyno: boom\n"},
 	}
 	for _, tt := range tests {
 		var out bytes.Buffer
