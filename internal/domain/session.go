@@ -29,17 +29,43 @@ const (
 
 // Session holds the facts that are the same for every exchange of a session.
 type Session struct {
-	ID            SessionID
-	StartedAt     time.Time
-	ToolVersion   string
-	ServerVersion string
-	Host          Host
-	Tag           string
-	Workload      Workload
-	Order         Order
-	Interval      time.Duration
-	Runs          int
-	CacheModes    []CacheMode
+	ID                  SessionID
+	StartedAt           time.Time
+	ToolVersion         string
+	ServerVersion       string
+	Backend             string // ollama (legacy default) or openai wire protocol
+	ServerKind          string // actual engine, or unknown
+	VersionSource       string
+	Endpoint            string // sanitized API base, never credentials
+	MeasurementProtocol string
+	ContextPolicy       string
+	ConfigJSON          string // sanitized effective request/deployment policy
+	Host                Host
+	Tag                 string
+	Workload            Workload
+	Order               Order
+	Interval            time.Duration
+	Runs                int
+	CacheModes          []CacheMode
+}
+
+// BackendName supplies the historical default for old/native sessions.
+func (s Session) BackendName() string {
+	if s.Backend == "" {
+		return BackendOllama
+	}
+	return s.Backend
+}
+
+// Protocol supplies the historical server-timed protocol for legacy sessions.
+func (s Session) Protocol() string {
+	if s.MeasurementProtocol == "" {
+		if s.BackendName() == BackendOllama {
+			return ProtocolOllama
+		}
+		return "unknown"
+	}
+	return s.MeasurementProtocol
 }
 
 // Power sources of a Host.
