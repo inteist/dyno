@@ -254,6 +254,7 @@ func TestGroupColumns(t *testing.T) {
 	cols := GroupColumns([]report.Dimension{report.ByModel, report.ByMode, report.ByDay})
 	g := report.Group{
 		Key:         report.Key{Model: "qwen3.5:4b-mlx", Mode: "continue", Bucket: "2026-10-05"},
+		Valid:       60,
 		Decode:      stats.Summary{N: 60, Median: 56.04, StdDev: 0.91},
 		Prefill:     stats.Summary{N: 60, Median: 56.2},
 		TTFT:        stats.Summary{N: 60, Median: 71.4},
@@ -265,11 +266,11 @@ func TestGroupColumns(t *testing.T) {
 		headers = append(headers, c.Header)
 		cells = append(cells, c.Cell(g))
 	}
-	wantHeaders := []string{"MODEL", "MODE", "DAY", "N", "DECODE tok/s", "PREFILL ms", "TTFT ms", "CACHED", "EXCLUDED"}
+	wantHeaders := []string{"MODEL", "MODE", "DAY", "N", "DECODE tok/s", "PREFILL ms", "TTFT ms", "LATENCY ms", "CLIENT tok/s", "CACHED", "EXCLUDED", "WARNINGS"}
 	if !slices.Equal(headers, wantHeaders) {
 		t.Errorf("headers = %q, want %q", headers, wantHeaders)
 	}
-	wantCells := []string{"qwen3.5:4b-mlx", "continue", "2026-10-05", "60", "56.0 ± 0.9", "56", "71", "99 %", "1 short"}
+	wantCells := []string{"qwen3.5:4b-mlx", "continue", "2026-10-05", "60", "56.0 ± 0.9", "56", "71", "-", "-", "99 %", "1 short", ""}
 	if !slices.Equal(cells, wantCells) {
 		t.Errorf("cells = %q, want %q", cells, wantCells)
 	}
@@ -279,7 +280,7 @@ func TestGroupColumns(t *testing.T) {
 			right = append(right, c.Header)
 		}
 	}
-	if want := []string{"N", "DECODE tok/s", "PREFILL ms", "TTFT ms", "CACHED"}; !slices.Equal(right, want) {
+	if want := []string{"N", "DECODE tok/s", "PREFILL ms", "TTFT ms", "LATENCY ms", "CLIENT tok/s", "CACHED"}; !slices.Equal(right, want) {
 		t.Errorf("right-aligned columns = %q, want %q", right, want)
 	}
 }
