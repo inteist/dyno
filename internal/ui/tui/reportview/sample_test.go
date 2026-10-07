@@ -105,7 +105,7 @@ func sampleRow(session domain.SessionID, at time.Time, p profile, f float64) rep
 				EvalTokens:     evalTokens,
 				EvalDuration:   scaled(time.Second, evalTokens/(p.decode*f)),
 			},
-			Client:     domain.ClientMetrics{TimeToFirstToken: scaled(p.ttft, 1/f)},
+			Client:     domain.ClientMetrics{TimeToFirstToken: scaled(p.ttft, 1/f), Wall: scaled(p.prefill, 1/f) + scaled(time.Second, evalTokens/(p.decode*f))},
 			DoneReason: domain.DoneLength,
 		},
 	}

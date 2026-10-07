@@ -64,11 +64,18 @@ func (m Model) titleView() string {
 
 // factsView returns the dimension values that every group shares, or "".
 func (m Model) factsView() string {
+	if len(m.columns.shared) == 0 {
+		return ""
+	}
 	facts := make([]string, len(m.columns.shared))
 	for i, c := range m.columns.shared {
-		facts[i] = m.theme.Header.Render(c.Header) + " " + m.theme.Text.Render(c.Cell(m.report.Groups[0]))
+		value := c.Cell(m.report.Groups[0])
+		if (c.Header == report.ByModelID.Header() || c.Header == report.ByDigest.Header()) && m.report.Groups[0].Key.Revision != "" {
+			value = format.Text(m.report.Groups[0].Key.Revision)
+		}
+		facts[i] = m.theme.Header.Render(c.Header) + " " + m.theme.Text.Render(value)
 	}
-	return ansi.Truncate(strings.Join(facts, m.theme.Muted.Render(format.Separator)), m.contentWidth(), "…")
+	return ansi.Wrap(strings.Join(facts, m.theme.Muted.Render(format.Separator)), max(1, m.contentWidth()), "")
 }
 
 // tableView returns the table of the groups.
@@ -79,8 +86,15 @@ func (m Model) tableView() string { return m.table.View() }
 func (m Model) chartsView() string {
 	g, metric := m.selectedGroup(), m.selectedMetric()
 	heading := m.chartHeading(g, metric)
+	if warnings := format.Warnings(g.Warnings); warnings != "" {
+		heading += "\n" + m.theme.Warn.Render("warnings: "+warnings)
+	}
 	if g.Summary(metric).N == 0 {
-		return heading + "\n" + m.theme.Muted.Render(noValidRuns)
+		hint := noValidRuns
+		if g.Valid > 0 {
+			hint = metricUnavailable
+		}
+		return heading + "\n" + m.theme.Muted.Render(hint)
 	}
 	return strings.Join([]string{
 		heading,
@@ -130,27 +144,51 @@ type columnSet struct {
 }
 
 // splitColumns returns the columns of r. The table leaves out each
-// dimension whose values follow from the dimensions before it, such as the
-// digest of a model, so that it fits narrow windows. The header shows the
+// dimension whose values follow from earlier dimensions, except model identity
+// and measurement policy: their variation must stay visible. The header shows the
 // dimensions with one value, and the chart heading shows all others for the
 // selected group. GroupColumns puts the dimensions first.
 func splitColumns(r report.Report) columnSet {
-	cols := format.GroupColumns(r.Dimensions)
+	cols := format.GroupColumns(r.Dimensions, r.Groups...)
 	var set columnSet
-	var distinct []format.Column[report.Group]
-	for _, c := range cols[:len(r.Dimensions)] {
+	var distinct, displayDistinct []format.Column[report.Group]
+	for i, c := range cols[:len(r.Dimensions)] {
+		// Determine dependencies from full values, not abbreviated identity cells.
+		raw := c
+		d := r.Dimensions[i]
+		raw.Cell = func(g report.Group) string { return g.Key.Value(d) }
 		switch {
-		case determined(c, nil, r.Groups):
-			set.shared = append(set.shared, c)
-		case determined(c, distinct, r.Groups):
+		case determined(raw, nil, r.Groups):
+			if !format.RedundantNativeFact(r.Groups[0].Key, d) {
+				set.shared = append(set.shared, c)
+			}
+		case (d == report.ByDigest || d == report.ByModelID) && format.IdentityDeterminedByModel(r):
+			set.named = append(set.named, c)
+		case d != report.ByDigest && d != report.ByModelID && d != report.ByMeasurement && d != report.ByEndpoint && determined(raw, distinct, r.Groups):
 			set.named = append(set.named, c)
 		default:
 			set.named = append(set.named, c)
-			distinct = append(distinct, c)
+			distinct = append(distinct, raw)
+			displayDistinct = append(displayDistinct, c)
 		}
 	}
-	set.table = slices.Concat(distinct, cols[len(r.Dimensions):])
+	// Shared protocol labels go first, so clipping never hides provenance
+	// behind an endpoint or a full model identity.
+	slices.SortStableFunc(set.shared, protocolFirst)
+	slices.SortStableFunc(set.named, protocolFirst)
+	slices.SortStableFunc(displayDistinct, protocolFirst)
+	set.table = slices.Concat(displayDistinct, cols[len(r.Dimensions):])
 	return set
+}
+
+func protocolFirst(a, b format.Column[report.Group]) int {
+	if a.Header == report.ByMeasurement.Header() && b.Header != a.Header {
+		return -1
+	}
+	if b.Header == report.ByMeasurement.Header() && a.Header != b.Header {
+		return 1
+	}
+	return 0
 }
 
 // determined reports whether the cells of c follow from the cells of by: no

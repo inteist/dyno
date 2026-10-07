@@ -1,0 +1,12 @@
+ dyno report                                   tab next metric · ? help · q quit
+ 1 run · 1 valid · 1 session · 2026-09-28
+ MEASUREMENT openai-chat-v1 policy-5e6125b55e17 · MODEL served · MODEL-ID
+ session-s · BACKEND openai · ENGINE vllm · ENDPOINT https://example.test/v1 ·
+ SERVER - · WORKLOAD c09efe432ef6 · MODE miss
+
+ N DECODE tok/s PREFILL ms TTFT ms LATENCY ms CLIENT tok/s CACHED EXCLUDED WARNI
+▸1            -          -   1,000      2,000            -      -          1 cac
+
+ decode tok/s · daily median
+ warnings: 1 cache-unverified, 1 version-unknown, 1 identity-unverified, 1 polic
+ metric unavailable in this group
