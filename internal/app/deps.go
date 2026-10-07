@@ -11,8 +11,10 @@ import (
 	"golang.org/x/term"
 
 	"dyno/internal/cli"
+	"dyno/internal/endpoint"
 	"dyno/internal/llm"
 	"dyno/internal/ollama"
+	"dyno/internal/openaicompat"
 	"dyno/internal/store/sqlite"
 	"dyno/internal/ui/plain"
 	"dyno/internal/ui/tui"
@@ -41,11 +43,39 @@ func (s IO) useTUI(plainFlag bool) bool { return s.Terminal && !plainFlag }
 
 // newClient returns the server client of the common flags.
 func newClient(c cli.Common) (llm.Client, error) {
-	client, err := ollama.New(c.Host)
-	if err != nil {
-		return nil, err
+	switch c.BackendName() {
+	case "ollama":
+		client, err := ollama.New(c.Host)
+		if err != nil {
+			return nil, err
+		}
+		return client, nil
+	case "openai":
+		return openaicompat.New(openaicompat.Config{
+			BaseURL: c.BaseURL, APIKey: c.APIKey(), Usage: c.Usage,
+			TokenLimitField: c.TokenLimitField, ServerKind: c.ServerKind,
+			ServerVersion: c.ServerVersion, ModelRevision: c.ModelRevision,
+			SkipModelDiscovery: c.SkipModelDiscovery,
+			OmitSeed:           c.OmitSeed, OmitTemperature: c.OmitTemperature,
+		})
+	default:
+		return nil, fmt.Errorf("unsupported backend %q", c.BackendName())
 	}
-	return client, nil
+}
+
+// warnEndpoint never includes secrets or URLs in diagnostics.
+func warnEndpoint(c cli.Common, stdio IO) {
+	if c.BackendName() != "openai" || c.APIKey() == "" || stdio.Err == nil {
+		return
+	}
+	u, err := endpoint.Parse(c.BaseURL)
+	if err != nil || endpoint.IsLoopback(u) {
+		return
+	}
+	fmt.Fprintf(stdio.Err, "notice: authentication from %s is sent to the configured non-loopback endpoint\n", c.APIKeyEnv)
+	if u.Scheme == "http" {
+		fmt.Fprintln(stdio.Err, "warning: bearer authentication over non-local plain HTTP; use HTTPS to protect credentials")
+	}
 }
 
 // openStore opens the database of the common flags.

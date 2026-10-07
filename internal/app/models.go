@@ -14,6 +14,7 @@ func Models(ctx context.Context, cmd cli.ModelsCommand, stdio IO) error {
 	if err != nil {
 		return err
 	}
+	warnEndpoint(cmd.Common, stdio)
 	models, err := client.Models(ctx)
 	if err != nil {
 		return fmt.Errorf("list models: %w", err)

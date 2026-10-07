@@ -25,12 +25,15 @@ func Run(ctx context.Context, cmd cli.RunCommand, stdio IO) error {
 	if err != nil {
 		return err
 	}
+	warnEndpoint(cmd.Common, stdio)
 	return runSession(ctx, cmd, stdio, client)
 }
 
 // runSession executes a session with client. Tests call it with a fake
 // client.
 func runSession(ctx context.Context, cmd cli.RunCommand, stdio IO, client llm.Client) error {
+	// Canonicalize a copy for both the runner and historical summary filters.
+	cmd.Options.Models = llm.NormalizeModelNames(client, cmd.Options.Models)
 	db, err := openStore(ctx, cmd.Common)
 	if err != nil {
 		return err
@@ -62,7 +65,24 @@ func runSession(ctx context.Context, cmd cli.RunCommand, stdio IO, client llm.Cl
 		if id == "" {
 			return runErr
 		}
-		if err := showSummary(context.WithoutCancel(ctx), ui, source, id, cmd.Options); err != nil {
+		filter := report.Filter{Backends: []string{cmd.BackendName()}}
+		if _, managed := client.(llm.ManagedLifecycle); !managed {
+			filter.Backends = []string{"unknown"}
+			filter.Endpoints = []string{cmd.BaseURL}
+			// Use adapter provenance, not the raw flag spelling: trailing slashes
+			// and programmatic default URLs must select the stored endpoint.
+			if provider, ok := client.(llm.InfoProvider); ok {
+				info, err := provider.Info(context.WithoutCancel(ctx))
+				if err != nil {
+					return errors.Join(runErr, fmt.Errorf("read endpoint provenance: %w", err))
+				}
+				if info.Backend != "" {
+					filter.Backends = []string{info.Backend}
+				}
+				filter.Endpoints = []string{info.Endpoint}
+			}
+		}
+		if err := showSummary(context.WithoutCancel(ctx), ui, source, id, cmd.Options, filter); err != nil {
 			runErr = errors.Join(runErr, err)
 		}
 		return runErr
@@ -87,21 +107,22 @@ func sessionDimensions() []report.Dimension {
 // allTimeDimensions group the runs of all sessions. They keep different
 // digests and server versions apart.
 func allTimeDimensions() []report.Dimension {
-	return []report.Dimension{report.ByModel, report.ByDigest, report.ByServer, report.ByMode}
+	return report.AllTimeDimensions()
 }
 
 // showSummary presents the runs of the session next to all runs with the
 // same models, cache modes, and workload.
-func showSummary(ctx context.Context, ui SessionUI, src report.Source, id domain.SessionID, o bench.Options) error {
+func showSummary(ctx context.Context, ui SessionUI, src report.Source, id domain.SessionID, o bench.Options, provenance report.Filter) error {
 	session, err := buildReport(ctx, src, report.Filter{Sessions: []domain.SessionID{id}}, sessionDimensions())
 	if err != nil {
 		return err
 	}
-	allTime, err := buildReport(ctx, src, report.Filter{
-		Models:     o.Models,
-		CacheModes: o.CacheModes,
-		Workloads:  []string{o.Workload().Hash()},
-	}, allTimeDimensions())
+	f := report.Filter{
+		Models: o.Models, CacheModes: o.CacheModes,
+		Workloads: []string{o.Workload().Hash()},
+	}
+	f.Backends, f.Endpoints = provenance.Backends, provenance.Endpoints
+	allTime, err := buildReport(ctx, src, f, allTimeDimensions())
 	if err != nil {
 		return err
 	}
