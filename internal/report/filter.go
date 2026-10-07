@@ -11,6 +11,8 @@ import (
 type Filter struct {
 	Since, Until time.Time
 	Models       []string
+	Backends     []string
+	Endpoints    []string
 	CacheModes   []domain.CacheMode
 	Prompts      []string // prompt names
 	Tags         []string
