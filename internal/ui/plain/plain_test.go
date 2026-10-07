@@ -97,7 +97,7 @@ func digestOf(model string) string {
 
 // key returns the key of a group with the default dimensions.
 func key(model string, mode domain.CacheMode) report.Key {
-	return report.Key{Model: model, Digest: domain.Model{Digest: digestOf(model)}.ShortDigest(), Server: "0.34.0", Workload: "21e02d1b0274", Mode: string(mode)}
+	return report.Key{Backend: "ollama", Engine: "ollama", Measurement: "ollama-server-v1", Model: model, Digest: digestOf(model), Server: "0.34.0", Workload: "21e02d1b0274", Mode: string(mode)}
 }
 
 // allTimeReport is a report over many sessions with the default dimensions.
@@ -106,19 +106,19 @@ func allTimeReport() report.Report {
 		Dimensions: report.DefaultDimensions(),
 		Groups: []report.Group{
 			{
-				Key: key(qwen, domain.CacheMiss), Decode: spread(60, 56.21, 0.84),
+				Key: key(qwen, domain.CacheMiss), Valid: 60, Decode: spread(60, 56.21, 0.84),
 				Prefill: median(60, 1941.3), PrefillRate: prefillRate(60, 1941.3), TTFT: median(60, 1958.4), CachedShare: median(60, 0),
 				Excluded: map[report.Flag]int{report.FlagShort: 2},
 			},
 			{
-				Key: key(qwen, domain.CachePrefix), Decode: spread(60, 56.04, 0.91),
+				Key: key(qwen, domain.CachePrefix), Valid: 60, Decode: spread(60, 56.04, 0.91),
 				Prefill: median(60, 56.2), TTFT: median(60, 71.4), CachedShare: median(60, 0.99),
 			},
 			{
 				Key: key(lfm, domain.CacheMiss), Excluded: map[report.Flag]int{report.FlagFailed: 3},
 			},
 			{
-				Key: key(lfm, domain.CachePrefix), Decode: spread(58, 151.33, 2.07),
+				Key: key(lfm, domain.CachePrefix), Valid: 58, Decode: spread(58, 151.33, 2.07),
 				Prefill: median(58, 302.4), TTFT: median(58, 318.1), CachedShare: median(58, 0.75),
 				Excluded: map[report.Flag]int{report.FlagLoadInRun: 1, report.FlagFailed: 1},
 			},
@@ -137,20 +137,20 @@ func sessionReport() report.Report {
 		Dimensions: report.DefaultDimensions(),
 		Groups: []report.Group{
 			{
-				Key: key(qwen, domain.CacheMiss), Decode: spread(1, 55.4, 0),
+				Key: key(qwen, domain.CacheMiss), Valid: 1, Decode: spread(1, 55.4, 0),
 				Prefill: median(1, 2207.1), PrefillRate: prefillRate(1, 2207.1), TTFT: median(1, 2236), CachedShare: median(1, 0),
 				Excluded: map[report.Flag]int{report.FlagFailed: 1},
 			},
 			{
-				Key: key(qwen, domain.CachePrefix), Decode: spread(2, 56.05, 0.21),
+				Key: key(qwen, domain.CachePrefix), Valid: 2, Decode: spread(2, 56.05, 0.21),
 				Prefill: median(2, 302.4), TTFT: median(2, 318.2), CachedShare: median(2, 0.75),
 			},
 			{
-				Key: key(lfm, domain.CacheMiss), Decode: spread(2, 151.2, 1.13),
+				Key: key(lfm, domain.CacheMiss), Valid: 2, Decode: spread(2, 151.2, 1.13),
 				Prefill: median(2, 998.7), PrefillRate: prefillRate(2, 998.7), TTFT: median(2, 1012.6), CachedShare: median(2, 0),
 			},
 			{
-				Key: key(lfm, domain.CachePrefix), Decode: spread(2, 150.95, 0.35),
+				Key: key(lfm, domain.CachePrefix), Valid: 2, Decode: spread(2, 150.95, 0.35),
 				Prefill: median(2, 121.5), TTFT: median(2, 133.9), CachedShare: median(2, 0.749),
 			},
 		},
