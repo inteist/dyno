@@ -78,7 +78,7 @@ func sessionStream() []timed {
 		{0, event.ModelLoading{Model: qwen}},
 		{4 * sec, event.ModelReady{Model: qwen, Load: 3300 * time.Millisecond}},
 		{4 * sec, event.Preparing{Step: steps[0], Action: event.ActionWarmup, Index: 1, Total: 1}},
-		{9 * sec, event.Progress{Step: steps[0], Tokens: 214, Elapsed: 3 * sec}},
+		{9 * sec, event.Progress{Step: steps[0], Chunks: 214, Elapsed: 3 * sec}},
 		finished(14*sec, steps[0], measurement(9242*time.Millisecond, 2207*time.Millisecond, 2236*time.Millisecond, 0)),
 		waiting(14 * sec),
 		{44 * sec, event.StepStarted{Index: 1, Total: 8, Step: steps[1]}},
@@ -151,7 +151,7 @@ func TestSessionLines(t *testing.T) {
 			want: "session S · 1 step · prompt short",
 		},
 		{name: "step started", e: event.StepStarted{Step: s}},
-		{name: "progress", e: event.Progress{Step: s, Tokens: 3}},
+		{name: "progress", e: event.Progress{Step: s, Chunks: 3}},
 		{
 			name: "action without a count",
 			e:    event.Preparing{Step: s, Action: event.ActionReload},
@@ -165,7 +165,7 @@ func TestSessionLines(t *testing.T) {
 		{
 			name: "result without tokens",
 			e:    event.StepFinished{Step: s},
-			want: "qwen3.5:4b-mlx  continue  run 3  decode 0.0 tok/s · prefill 0 ms · ttft 0 ms · cached 0 %",
+			want: "qwen3.5:4b-mlx  continue  run 3  decode - tok/s · prefill 0 ms · ttft - · cached 0 % · latency - · client completion - tok/s",
 		},
 		{
 			name: "long wait",
@@ -214,7 +214,11 @@ func TestSessionLinesBeforeStart(t *testing.T) {
 func TestSummaryGolden(t *testing.T) {
 	t.Parallel()
 	var buf bytes.Buffer
-	NewSessionUI(&buf, fixedNow).ShowSummary(sessionReport(), allTimeReport())
+	history := allTimeReport()
+	history.Dimensions = report.AllTimeDimensions()
+	current := sessionReport()
+	current.Dimensions = []report.Dimension{report.ByModel, report.ByMode}
+	NewSessionUI(&buf, fixedNow).ShowSummary(current, history)
 	golden.Assert(t, "summary", buf.String())
 }
 

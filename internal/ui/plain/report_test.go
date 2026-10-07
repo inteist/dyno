@@ -20,16 +20,16 @@ func dailyReport() report.Report {
 		Dimensions: []report.Dimension{report.ByModel, report.ByMode, report.ByDay},
 		Groups: []report.Group{
 			{
-				Key: day(domain.CacheMiss, "2026-10-01"), Decode: spread(12, 151.84, 1.92),
+				Key: day(domain.CacheMiss, "2026-10-01"), Valid: 12, Decode: spread(12, 151.84, 1.92),
 				Prefill: median(12, 1001.6), TTFT: median(12, 1014.2), CachedShare: median(12, 0),
 			},
 			{
-				Key: day(domain.CacheMiss, "2026-10-02"), Decode: spread(9, 149.06, 2.4),
+				Key: day(domain.CacheMiss, "2026-10-02"), Valid: 9, Decode: spread(9, 149.06, 2.4),
 				Prefill: median(9, 999.96), TTFT: median(9, 1012.5), CachedShare: median(9, 0.004),
 				Excluded: map[report.Flag]int{report.FlagUnexpectedHit: 1, report.FlagShort: 2},
 			},
 			{
-				Key: day(domain.CacheContinue, "2026-10-01"), Decode: spread(12, 150.2, 0.71),
+				Key: day(domain.CacheContinue, "2026-10-01"), Valid: 12, Decode: spread(12, 150.2, 0.71),
 				Prefill: median(12, 18.4), TTFT: median(12, 31.7), CachedShare: median(12, 0.995),
 			},
 		},
