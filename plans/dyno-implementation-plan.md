@@ -1846,7 +1846,7 @@ Backup: `sqlite3 bench.db ".backup bench-backup.db"`.
 ```text
 dyno run      --models LIST [options]      execute a session
 dyno report   [options]                    summarize the stored runs
-dyno models   [--host URL]                 list the local models
+dyno models   [--backend ollama|openai] [--host URL]  list models from the selected provider
 dyno version                               print the tool version
 ```
 
@@ -2395,9 +2395,22 @@ values. Sections 8.1, 8.6, 9.6, 11, and 12 show the old names.
 
 ### 20.3 Adding a server
 
-Only Ollama is supported. This section lists what a second server needs, so
-that the work does not start from nothing. Do not build these parts before
-a second server exists: the right shape depends on what that server can do.
+**Accepted next-provider direction:** add a generic `openai` backend for
+externally managed OpenAI-compatible endpoints, using
+`github.com/openai/openai-go/v3` behind `llm.Client`. vLLM is a target server,
+not a separate inference transport. A URL and served model ID suffice; vLLM-only
+metadata and administrative cache operations are optional. Disable SDK retries
+for measured requests and retain separate client-timed metrics.
+
+The detailed architecture, SDK validation, CLI contract, migrations, implementation
+phases, and acceptance tests are in
+[OpenAI-compatible endpoint benchmarks, including vLLM](vllm-implementation-plan.md).
+That follow-on plan supersedes the earlier next-server recommendation below;
+the inventory here remains useful context, not a claim of implemented support.
+
+The inventory below describes the earlier Ollama-only design, not the current
+supported backends. Generic OpenAI-compatible endpoint support is now implemented;
+see the follow-on plan above for its delivered scope and live-validation gates.
 
 What already supports a second server:
 
@@ -2435,7 +2448,9 @@ What a second server can cost:
 5. Each server needs live experiments like those of 19.1, and its own
    fixtures.
 
-The best second server is `llama-server`: its `timings` object has
+An earlier candidate was `llama-server`: its `timings` object has
 `prompt_n`, `prompt_ms`, `predicted_n`, `predicted_ms`, and `cache_n`, which
-give the same metrics as Ollama. These field names are not checked against a
-live server.
+could supply server-timed metrics comparable to Ollama. These field names are
+not checked against a live server. The accepted next step instead targets generic
+OpenAI-compatible endpoint benchmarking, with server-specific timing extensions
+left for later.
