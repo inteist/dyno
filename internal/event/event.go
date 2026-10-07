@@ -19,10 +19,16 @@ type Lossy interface {
 
 // Actions of a Preparing event.
 const (
-	ActionWarmup = "warm-up"
-	ActionReload = "reload"
-	ActionPrimer = "primer"
+	ActionWarmup     = "warm-up"
+	ActionReload     = "reload"
+	ActionPrimer     = "primer"
+	ActionResetCache = "reset cache"
 )
+
+// ProgressUnit prevents streaming flush counts from being mistaken for tokens.
+type ProgressUnit string
+
+const ProgressChunks ProgressUnit = "chunks"
 
 type (
 	// SessionStarted comes first. It holds the session row and the schedule.
@@ -55,7 +61,8 @@ type (
 	// Progress reports the stream of a run. It is lossy.
 	Progress struct {
 		Step    domain.Step
-		Tokens  int
+		Chunks  int // streamed content chunks, not usage tokens
+		Unit    ProgressUnit
 		Elapsed time.Duration
 	}
 	// StepFinished comes after a successful run.

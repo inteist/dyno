@@ -140,6 +140,9 @@ func (m Model) title() string {
 	}
 	s := m.state.Session
 	parts := []string{"session " + string(s.ID), "prompt " + s.Workload.PromptName}
+	if p := format.Provenance(s); p != "" {
+		parts = append(parts, p)
+	}
 	if s.Tag != "" {
 		parts = append(parts, "tag "+s.Tag)
 	}
@@ -235,12 +238,22 @@ func shortResult(r LastRun) string { return rateText(r.Measurement) }
 // runResult returns the decode rate and the TTFT of a run, for example
 // "56.0 tok/s · ttft 71 ms".
 func runResult(m domain.Measurement) string {
-	return rateText(m) + sep + "ttft " + format.Duration(m.Client.TimeToFirstToken)
+	text := rateText(m) + sep + "ttft " + format.Timing(m.Client.TimeToFirstToken)
+	if !report.MetricDecode.Available(m) {
+		text += sep + "latency " + format.Timing(m.Client.Wall)
+	}
+	if !report.CachedShareAvailable(m) {
+		text += sep + string(report.WarningCacheUnverified)
+	}
+	return text
 }
 
 // rateText returns the decode rate of a run, for example "56.0 tok/s".
 func rateText(m domain.Measurement) string {
-	return format.Rate(report.MetricDecode.Value(m)) + " tok/s"
+	if report.MetricDecode.Available(m) {
+		return format.Metric(m, report.MetricDecode) + " tok/s"
+	}
+	return "client completion " + format.Metric(m, report.MetricClientRate) + " tok/s"
 }
 
 // activity returns the current step and the failures while the session
@@ -288,10 +301,12 @@ func (m Model) phaseText(c Current) string {
 		return event.ActionWarmup
 	case PhaseReload:
 		return event.ActionReload
+	case PhaseResetCache:
+		return event.ActionResetCache
 	case PhasePrimer:
 		return primerText(c)
 	case PhaseRunning:
-		return m.tokensText(c)
+		return m.progressText(c)
 	}
 	return "starting"
 }
@@ -305,17 +320,9 @@ func primerText(c Current) string {
 	return event.ActionPrimer + " " + format.Int(c.Action) + "/" + format.Int(c.Actions)
 }
 
-// tokensText returns the tokens so far, out of num_predict, and the live
-// rate.
-func (m Model) tokensText(c Current) string {
-	tokens := format.Count(c.Tokens, "token")
-	if limit := m.state.Session.Workload.NumPredict; limit > 0 {
-		tokens = format.Int(c.Tokens) + "/" + format.Int(limit) + " tokens"
-	}
-	if rate, ok := c.Rate(); ok {
-		return tokens + sep + format.Rate(rate) + " tok/s"
-	}
-	return tokens
+// progressText reports chunks and elapsed time, never token counts or rates.
+func (m Model) progressText(c Current) string {
+	return "streaming " + format.Count(c.Chunks, "chunk") + sep + "elapsed " + format.Duration(c.Elapsed)
 }
 
 // failureLine counts the failed steps and shows the last error.

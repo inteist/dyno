@@ -13,14 +13,14 @@ func TestTeeAndRecorder(t *testing.T) {
 	var a, b eventtest.Recorder
 	sink := event.Tee(&a, &b, event.SinkFunc(func(event.Event) {}))
 	sink.Publish(event.ModelLoading{Model: "m"})
-	sink.Publish(event.Progress{Tokens: 3})
+	sink.Publish(event.Progress{Chunks: 3})
 	sink.Publish(event.SessionEnded{})
 
 	for _, r := range []*eventtest.Recorder{&a, &b} {
 		if got, want := r.Names(), []string{"ModelLoading", "SessionEnded"}; !slices.Equal(got, want) {
 			t.Errorf("Names() = %v, want %v", got, want)
 		}
-		if got := eventtest.Of[event.Progress](r); len(got) != 1 || got[0].Tokens != 3 {
+		if got := eventtest.Of[event.Progress](r); len(got) != 1 || got[0].Chunks != 3 {
 			t.Errorf("Of[Progress]() = %v", got)
 		}
 		if len(r.Events()) != 3 {

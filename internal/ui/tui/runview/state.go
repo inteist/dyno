@@ -13,16 +13,17 @@ type Phase int
 
 // Phases of the current step.
 const (
-	PhaseNone     Phase = iota // no step has started
-	PhaseStarting              // the step started, and nothing else happened yet
-	PhaseLoading               // the server loads the model
-	PhaseWarmup                // the warm-up request after a load
-	PhaseReload                // the model reloads for an empty cache
-	PhasePrimer                // a primer request fills the cache
-	PhaseRunning               // the measured run streams tokens
-	PhaseFinished              // the run gave a result
-	PhaseFailed                // the step failed
-	PhaseWaiting               // the pause before the next step
+	PhaseNone       Phase = iota // no step has started
+	PhaseStarting                // the step started, and nothing else happened yet
+	PhaseLoading                 // the server loads the model
+	PhaseWarmup                  // the warm-up request after a load
+	PhaseReload                  // the model reloads for an empty cache
+	PhaseResetCache              // the endpoint resets its cache
+	PhasePrimer                  // a primer request fills the cache
+	PhaseRunning                 // the measured run streams tokens
+	PhaseFinished                // the run gave a result
+	PhaseFailed                  // the step failed
+	PhaseWaiting                 // the pause before the next step
 )
 
 // State is what the run view knows about the session. Apply returns a new
@@ -70,10 +71,8 @@ type Current struct {
 	Phase        Phase
 	Action       int // the 1-based index of a primer
 	Actions      int // the number of primers of the step
-	Tokens       int // the tokens of the run so far
+	Chunks       int // content chunks so far, never authoritative tokens
 	Elapsed      time.Duration
-	FirstTokens  int                // the tokens at the first progress of the run
-	FirstElapsed time.Duration      // the elapsed time at the first progress
 	Result       domain.Measurement // the run, in PhaseFinished
 	Err          error              // the failure, in PhaseFailed
 	Wait         time.Duration      // the pause, in PhaseWaiting
@@ -97,17 +96,6 @@ func (m ModelState) FailedSteps() int {
 		n += c.Failed
 	}
 	return n
-}
-
-// Rate returns the tokens per second since the first progress of the run.
-// It leaves out the prefill, so it comes close to the decode rate. It
-// reports false until the run has two progress events.
-func (c Current) Rate() (float64, bool) {
-	d := c.Elapsed - c.FirstElapsed
-	if c.Phase != PhaseRunning || d <= 0 {
-		return 0, false
-	}
-	return float64(c.Tokens-c.FirstTokens) / d.Seconds(), true
 }
 
 // Remaining returns the rest of the wait at now, rounded up to whole
@@ -176,12 +164,12 @@ func (s State) preparing(e event.Preparing) State {
 }
 
 func (s State) progress(e event.Progress) State {
-	if s.Current.Phase != PhaseRunning || s.Current.Step != e.Step {
-		s.Current.FirstTokens, s.Current.FirstElapsed = e.Tokens, e.Elapsed
-	}
+	if e.Unit != "" && e.Unit != event.ProgressChunks {
+		return s
+	} // no token inference for unknown units
 	s.Current.Step = e.Step
 	s.Current.Phase = PhaseRunning
-	s.Current.Tokens, s.Current.Elapsed = e.Tokens, e.Elapsed
+	s.Current.Chunks, s.Current.Elapsed = e.Chunks, e.Elapsed
 	return s
 }
 
@@ -243,6 +231,8 @@ func actionPhase(action string) Phase {
 		return PhaseWarmup
 	case event.ActionReload:
 		return PhaseReload
+	case event.ActionResetCache:
+		return PhaseResetCache
 	}
 	return PhasePrimer
 }
