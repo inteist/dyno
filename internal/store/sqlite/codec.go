@@ -53,10 +53,23 @@ func (c timeColumn) Scan(src any) error {
 
 // orZero returns a scanner for a column that can be NULL. NULL gives the
 // zero value of T.
-func orZero[T any](dst *T) sql.Scanner { return nullable[T]{dst} }
+func orZero[T any](dst *T) sql.Scanner { return nullable[T]{dst: dst} }
 
-// nullable scans a column that can be NULL into dst.
-type nullable[T any] struct{ dst *T }
+// metricColumn scans a raw metric and records whether it was supplied. A
+// present zero remains known; NULL clears both the value and its availability.
+func metricColumn[T any](dst *T, known *bool) sql.Scanner {
+	return nullable[T]{dst: dst, known: known}
+}
+
+// optionalText writes unknown strings as NULL instead of inventing a value.
+func optionalText(s string) sql.Null[string] { return sql.Null[string]{V: s, Valid: s != ""} }
+
+// nullable scans a column that can be NULL into dst and optionally records
+// its presence.
+type nullable[T any] struct {
+	dst   *T
+	known *bool
+}
 
 // Scan implements sql.Scanner.
 func (c nullable[T]) Scan(src any) error {
@@ -65,5 +78,8 @@ func (c nullable[T]) Scan(src any) error {
 		return err
 	}
 	*c.dst = n.V
+	if c.known != nil {
+		*c.known = n.Valid
+	}
 	return nil
 }

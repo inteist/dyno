@@ -24,8 +24,9 @@ func NewRecorder(db *sql.DB) *Recorder {
 const insertSession = `INSERT INTO sessions (
 	id, started_at, status, tool_version, server_version, host, power_source, tag,
 	prompt_name, prompt_hash, workload_hash, num_predict, num_ctx, temperature, seed,
-	run_order, interval_ns, runs, cache_modes
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	run_order, interval_ns, runs, cache_modes,
+	backend, server_kind, version_source, endpoint, measurement_protocol, context_policy, config_json
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 // StartSession inserts s with the status running.
 func (r *Recorder) StartSession(ctx context.Context, s domain.Session) error {
@@ -36,28 +37,57 @@ func (r *Recorder) StartSession(ctx context.Context, s domain.Session) error {
 // sessionArgs returns the values of insertSession.
 func sessionArgs(s domain.Session) []any {
 	w := s.Workload
+	kind, policy, versionSource := s.ServerKind, s.ContextPolicy, s.VersionSource
+	if kind == "" {
+		kind = "unknown"
+		if s.BackendName() == domain.BackendOllama {
+			kind = domain.BackendOllama
+		}
+	}
+	if policy == "" {
+		policy = "server-managed"
+		if s.BackendName() == domain.BackendOllama {
+			policy = domain.LegacyNativeContextPolicy
+		}
+	}
+	// These fallback spellings are historical storage facts, not adapter policy.
+	if versionSource == "" && s.BackendName() == domain.BackendOllama && s.ServerVersion != "" {
+		versionSource = "server"
+	}
 	return []any{
 		string(s.ID), formatTime(s.StartedAt), string(domain.StatusRunning),
 		s.ToolVersion, s.ServerVersion, s.Host.Name, s.Host.PowerSource, s.Tag,
 		w.PromptName, w.PromptHash, w.Hash(), w.NumPredict, w.NumCtx, w.Temperature, w.Seed,
 		string(s.Order), int64(s.Interval), s.Runs, joinModes(s.CacheModes),
+		s.BackendName(), kind, optionalText(versionSource), optionalText(s.Endpoint), s.Protocol(), policy,
+		optionalText(s.ConfigJSON),
 	}
 }
 
 const insertModel = `INSERT INTO models (
-	digest, format, family, parameter_size, quantization, size_bytes, first_seen_at
-) VALUES (?, ?, ?, ?, ?, ?, ?)
-ON CONFLICT (digest) DO NOTHING`
+	model_key, digest, identity_source, revision,
+	format, family, parameter_size, quantization, size_bytes, first_seen_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT (model_key) DO NOTHING`
 
-// SaveModel inserts m once for each digest. A known digest keeps its row.
+// SaveModel inserts m once for each full storage key. A known key keeps its row.
 func (r *Recorder) SaveModel(ctx context.Context, m domain.Model) error {
+	if m.StorageKey() == "" {
+		return fmt.Errorf("save model %s: missing storage identity", m.Name)
+	}
+	source := m.IdentitySource
+	if source == "" && m.Digest != "" {
+		source = "digest"
+	}
 	_, err := r.exec(ctx, "save model "+m.Name, insertModel,
-		m.Digest, m.Format, m.Family, m.Parameters, m.Quantization, m.SizeBytes, formatTime(r.now()))
+		m.StorageKey(), optionalText(m.Digest), optionalText(source), optionalText(m.Revision),
+		optionalText(m.Format), optionalText(m.Family), optionalText(m.Parameters), optionalText(m.Quantization),
+		sql.Null[int64]{V: m.SizeBytes, Valid: m.HasSizeBytes()}, formatTime(r.now()))
 	return err
 }
 
 const insertExchange = `INSERT INTO exchanges (
-	session_id, model_name, model_digest, cache_mode, run_number, kind, started_at,
+	session_id, model_name, model_key, cache_mode, run_number, kind, started_at,
 	prompt_tokens, cached_tokens, prompt_ns, eval_tokens, eval_ns, load_ns, total_ns,
 	ttft_ns, wall_ns, done_reason, error
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -65,6 +95,9 @@ const insertExchange = `INSERT INTO exchanges (
 // SaveExchange inserts x. A failed exchange has NULL metrics and its error
 // text.
 func (r *Recorder) SaveExchange(ctx context.Context, x domain.Exchange) error {
+	if x.Model.StorageKey() == "" {
+		return fmt.Errorf("save %s of %s: missing storage identity", x.Kind, x.Step)
+	}
 	_, err := r.exec(ctx, fmt.Sprintf("save %s of %s", x.Kind, x.Step), insertExchange, exchangeArgs(x)...)
 	return err
 }
@@ -72,7 +105,7 @@ func (r *Recorder) SaveExchange(ctx context.Context, x domain.Exchange) error {
 // exchangeArgs returns the values of insertExchange.
 func exchangeArgs(x domain.Exchange) []any {
 	args := []any{
-		string(x.Session), x.Model.Name, x.Model.Digest, string(x.Step.Mode), x.Step.Run,
+		string(x.Session), x.Model.Name, x.Model.StorageKey(), string(x.Step.Mode), x.Step.Run,
 		string(x.Kind), formatTime(x.StartedAt),
 	}
 	args = append(args, measurementArgs(x)...)
@@ -83,9 +116,16 @@ func exchangeArgs(x domain.Exchange) []any {
 func measurementArgs(x domain.Exchange) []any {
 	s, c := x.Measurement.Server, x.Measurement.Client
 	args := []any{
-		s.PromptTokens, s.CachedTokens, int64(s.PromptDuration), s.EvalTokens, int64(s.EvalDuration),
-		int64(s.LoadDuration), int64(s.TotalDuration), int64(c.TimeToFirstToken), int64(c.Wall),
-		x.Measurement.DoneReason,
+		sql.Null[int]{V: s.PromptTokens, Valid: s.Has(domain.MetricPromptTokens)},
+		sql.Null[int]{V: s.CachedTokens, Valid: s.Has(domain.MetricCachedTokens)},
+		sql.Null[int64]{V: int64(s.PromptDuration), Valid: s.Has(domain.MetricPromptDuration)},
+		sql.Null[int]{V: s.EvalTokens, Valid: s.Has(domain.MetricEvalTokens)},
+		sql.Null[int64]{V: int64(s.EvalDuration), Valid: s.Has(domain.MetricEvalDuration)},
+		sql.Null[int64]{V: int64(s.LoadDuration), Valid: s.Has(domain.MetricLoadDuration)},
+		sql.Null[int64]{V: int64(s.TotalDuration), Valid: s.Has(domain.MetricTotalDuration)},
+		// ClientMetrics uses zero for no first token; wall time is always measured.
+		sql.Null[int64]{V: int64(c.TimeToFirstToken), Valid: c.TimeToFirstToken != 0}, int64(c.Wall),
+		optionalText(x.Measurement.DoneReason),
 	}
 	if x.Failed() {
 		clear(args)
