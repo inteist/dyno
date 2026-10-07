@@ -10,15 +10,18 @@ import (
 	"dyno/internal/stats"
 )
 
-// Build groups rows by dims and summarizes each group. Empty dims give one
-// group for all rows. loc sets the day and week boundaries, and nil means
-// UTC. The result does not depend on the order of rows.
+// Build groups rows by dims and summarizes each group. Incompatible
+// measurement protocols or policies always form separate groups, even with
+// empty dims. Legacy-only empty dims give one group. loc sets the day and week
+// boundaries; nil means UTC. The result does not depend on the order of rows.
 func Build(rows []Row, dims []Dimension, loc *time.Location) Report {
 	if loc == nil {
 		loc = time.UTC
 	}
 	sorted := inTimeOrder(inLocation(rows, loc))
-	groups := buildGroups(sorted, dims, loc)
+	policies := make(policyKeys)
+	dims = effectiveDimensions(sorted, dims, policies)
+	groups := buildGroups(sorted, dims, loc, policies)
 	first, last := span(sorted)
 	return Report{
 		Dimensions: slices.Clone(dims),
@@ -33,8 +36,8 @@ func Build(rows []Row, dims []Dimension, loc *time.Location) Report {
 
 // buildGroups returns one group for each key of rows, in the order of
 // compareKeys. rows must be in time order.
-func buildGroups(rows []Row, dims []Dimension, loc *time.Location) []Group {
-	parts := groupRows(rows, dims, loc)
+func buildGroups(rows []Row, dims []Dimension, loc *time.Location, policies policyKeys) []Group {
+	parts := groupRows(rows, dims, loc, policies)
 	keys := slices.SortedFunc(maps.Keys(parts), compareKeys(dims))
 	groups := make([]Group, len(keys))
 	for i, k := range keys {
@@ -47,30 +50,64 @@ func buildGroups(rows []Row, dims []Dimension, loc *time.Location) []Group {
 // The statistics and the series use only the valid rows, the counts and the
 // times use all rows.
 func buildGroup(k Key, rows []Row, loc *time.Location) Group {
+	if k.Digest != "" {
+		for _, r := range rows {
+			if k.IdentitySource == "" {
+				k.IdentitySource = r.Model.IdentitySource
+			}
+			if k.Revision == "" {
+				k.Revision = r.Model.Revision
+			}
+		}
+	}
 	valid, excluded := partition(rows)
 	first, last := span(rows)
+	endpoints := make(map[string]bool)
+	for _, r := range rows {
+		if r.Endpoint != "" {
+			endpoints[r.Endpoint] = true
+		}
+	}
 	return Group{
+		Compatible:  slices.ContainsFunc(rows, func(r Row) bool { return !r.Native() }),
 		Key:         k,
+		Endpoints:   slices.Sorted(maps.Keys(endpoints)),
 		Decode:      metricSummary(valid, MetricDecode),
 		Prefill:     metricSummary(valid, MetricPrefill),
 		PrefillRate: metricSummary(valid, MetricPrefillRate),
 		TTFT:        metricSummary(valid, MetricTTFT),
-		CachedShare: summarize(valid, cachedShare),
+		Latency:     metricSummary(valid, MetricLatency),
+		ClientRate:  metricSummary(valid, MetricClientRate),
+		Valid:       len(valid),
+		CachedShare: summarize(slices.DeleteFunc(slices.Clone(valid), func(r Row) bool { return !CachedShareAvailable(r.Measurement) }), cachedShare),
 		Sessions:    countSessions(rows),
 		First:       first,
 		Last:        last,
 		Excluded:    excluded,
+		Warnings:    countWarnings(valid),
 		Daily:       perMetric(func(m Metric) []Point { return dailyMedians(runsOf(valid, m), m, loc) }),
 		Recent:      perMetric(func(m Metric) []Point { return recentValues(runsOf(valid, m), m) }),
 	}
 }
 
-// validRuns returns the number of valid runs of groups. Each summary of a
-// group counts the valid runs of the group.
+// effectiveDimensions preserves historical custom grouping for legacy-only
+// reports, but never merges incompatible measurement protocols or policies.
+func effectiveDimensions(rows []Row, dims []Dimension, policies policyKeys) []Dimension {
+	if slices.Contains(dims, ByMeasurement) || len(rows) == 0 {
+		return dims
+	}
+	policy := policies.key(rows[0])
+	if slices.ContainsFunc(rows, func(r Row) bool { return r.Protocol() != domain.ProtocolOllama || policies.key(r) != policy }) {
+		return append(slices.Clone(dims), ByMeasurement)
+	}
+	return dims
+}
+
+// validRuns returns the number of valid rows, independent of metric availability.
 func validRuns(groups []Group) int {
 	n := 0
 	for _, g := range groups {
-		n += g.Decode.N
+		n += g.Valid
 	}
 	return n
 }
@@ -82,7 +119,7 @@ func metricSummary(runs []Row, m Metric) stats.Summary {
 
 // runsOf returns the runs that give a value of m, in their order.
 func runsOf(runs []Row, m Metric) []Row {
-	return slices.DeleteFunc(slices.Clone(runs), func(r Row) bool { return !m.Covers(r.Mode) })
+	return slices.DeleteFunc(slices.Clone(runs), func(r Row) bool { return !m.Covers(r.Mode) || !m.Available(r.Measurement) })
 }
 
 // summarize returns the summary of value over the measurements of runs.

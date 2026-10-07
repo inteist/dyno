@@ -32,11 +32,14 @@ func Classify(r Row) []Flag {
 	if m.DoneReason != domain.DoneLength {
 		flags = append(flags, FlagShort)
 	}
-	if r.Mode == domain.CacheMiss && unexpectedHit(m.Server) {
-		flags = append(flags, FlagUnexpectedHit)
-	}
-	if m.Server.LoadDuration > maxLoadInRun {
-		flags = append(flags, FlagLoadInRun)
+	// These allowances are calibrated for native Ollama measurements only.
+	if r.Native() {
+		if r.Mode == domain.CacheMiss && CachedShareAvailable(m) && unexpectedHit(m.Server) {
+			flags = append(flags, FlagUnexpectedHit)
+		}
+		if m.Server.Has(domain.MetricLoadDuration) && m.Server.LoadDuration > maxLoadInRun {
+			flags = append(flags, FlagLoadInRun)
+		}
 	}
 	return flags
 }

@@ -22,8 +22,11 @@ func Flags() []Flag { return []Flag{FlagFailed, FlagShort, FlagUnexpectedHit, Fl
 
 // Key holds the values of the grouping dimensions. Unused fields are empty.
 // Bucket holds the day ("2026-10-05") or the week ("2026-W41").
+// Policy holds the full fingerprint within the measurement dimension.
 type Key struct {
 	Model, Digest, Server, Workload, Mode, Tag, Bucket, Session string
+	Backend, Engine, Endpoint, Measurement, Policy              string
+	IdentitySource, Revision                                    string // identity display facts, never abbreviations
 }
 
 // Value returns the field of k that d fills.
@@ -31,8 +34,19 @@ func (k Key) Value(d Dimension) string {
 	switch d {
 	case ByModel:
 		return k.Model
-	case ByDigest:
+	case ByDigest, ByModelID:
 		return k.Digest
+	case ByBackend:
+		return k.Backend
+	case ByEngine:
+		return k.Engine
+	case ByEndpoint:
+		return k.Endpoint
+	case ByMeasurement:
+		if k.Policy != "" {
+			return k.Measurement + " policy-" + k.Policy
+		}
+		return k.Measurement
 	case ByServer:
 		return k.Server
 	case ByWorkload:
@@ -57,16 +71,20 @@ const (
 	MetricPrefill     Metric = "prefill"      // milliseconds
 	MetricPrefillRate Metric = "prefill-rate" // uncached prompt tokens per second
 	MetricTTFT        Metric = "ttft"         // milliseconds
+	MetricLatency     Metric = "latency"      // client wall milliseconds
+	MetricClientRate  Metric = "client-rate"  // completion tokens per client wall second
 )
 
 // Metrics returns every metric in display order.
 func Metrics() []Metric {
-	return []Metric{MetricDecode, MetricPrefill, MetricPrefillRate, MetricTTFT}
+	return []Metric{MetricDecode, MetricPrefill, MetricPrefillRate, MetricTTFT, MetricLatency, MetricClientRate}
 }
 
 // IsRate reports whether m is in tokens per second. The other metrics are
 // in milliseconds.
-func (m Metric) IsRate() bool { return m == MetricDecode || m == MetricPrefillRate }
+func (m Metric) IsRate() bool {
+	return m == MetricDecode || m == MetricPrefillRate || m == MetricClientRate
+}
 
 // Label returns the name and unit of m, for example "decode tok/s".
 func (m Metric) Label() string {
@@ -79,6 +97,10 @@ func (m Metric) Label() string {
 		return "prefill tok/s"
 	case MetricTTFT:
 		return "TTFT ms"
+	case MetricLatency:
+		return "latency ms"
+	case MetricClientRate:
+		return "client completion tok/s"
 	}
 	return string(m)
 }
@@ -90,7 +112,33 @@ func (m Metric) Covers(mode domain.CacheMode) bool {
 	return m != MetricPrefillRate || mode == domain.CacheMiss
 }
 
-// Value returns the value of m for one measurement.
+// Available reports whether x supplies the inputs of m. A rate needs a
+// positive interval; zero TTFT means no generated content arrived.
+func (m Metric) Available(x domain.Measurement) bool {
+	s := x.Server
+	switch m {
+	case MetricDecode:
+		return s.Has(domain.MetricEvalTokens) && s.Has(domain.MetricEvalDuration) && s.EvalDuration > 0
+	case MetricPrefill:
+		return s.Has(domain.MetricPromptDuration)
+	case MetricPrefillRate:
+		return s.Has(domain.MetricPromptTokens) && s.Has(domain.MetricCachedTokens) && s.Has(domain.MetricPromptDuration) && s.PromptDuration > 0
+	case MetricTTFT:
+		return x.Client.TimeToFirstToken > 0
+	case MetricLatency:
+		return x.Client.Wall > 0
+	case MetricClientRate:
+		return s.Has(domain.MetricEvalTokens) && x.Client.Wall > 0
+	}
+	return false
+}
+
+// CachedShareAvailable reports whether both cache-share inputs are known.
+func CachedShareAvailable(x domain.Measurement) bool {
+	return x.Server.Has(domain.MetricPromptTokens) && x.Server.Has(domain.MetricCachedTokens)
+}
+
+// Value returns the value of m for one measurement. Check Available first.
 func (m Metric) Value(x domain.Measurement) float64 {
 	switch m {
 	case MetricDecode:
@@ -101,6 +149,12 @@ func (m Metric) Value(x domain.Measurement) float64 {
 		return x.Server.PrefillRate()
 	case MetricTTFT:
 		return milliseconds(x.Client.TimeToFirstToken)
+	case MetricLatency:
+		return milliseconds(x.Client.Wall)
+	case MetricClientRate:
+		if x.Client.Wall > 0 {
+			return float64(x.Server.EvalTokens) / x.Client.Wall.Seconds()
+		}
 	}
 	return 0
 }
@@ -128,15 +182,21 @@ type Report struct {
 
 // Group is the summary of the rows with one key.
 type Group struct {
+	Compatible  bool // non-native measurements present, independent of grouping dimensions
 	Key         Key
+	Endpoints   []string      // full display provenance even when endpoint is not grouped
 	Decode      stats.Summary // tokens per second
 	Prefill     stats.Summary // milliseconds
 	PrefillRate stats.Summary // uncached prompt tokens per second
 	TTFT        stats.Summary // milliseconds
+	Latency     stats.Summary // client wall milliseconds
+	ClientRate  stats.Summary // completion tokens per client wall second
+	Valid       int           // rows without exclusion flags, independent of metric availability
 	CachedShare stats.Summary // 0 to 1
 	Sessions    int
 	First, Last time.Time
 	Excluded    map[Flag]int
+	Warnings    map[Warning]int    // non-excluding measurement/provenance caveats
 	Daily       map[Metric][]Point // daily medians of the valid runs, for the charts
 	Recent      map[Metric][]Point // the last RecentRuns valid runs, oldest first
 }
@@ -152,6 +212,10 @@ func (g Group) Summary(m Metric) stats.Summary {
 		return g.PrefillRate
 	case MetricTTFT:
 		return g.TTFT
+	case MetricLatency:
+		return g.Latency
+	case MetricClientRate:
+		return g.ClientRate
 	}
 	return stats.Summary{}
 }
