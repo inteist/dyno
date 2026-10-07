@@ -22,6 +22,10 @@ fmt:
 fmt-check:
     test -z "$(gofmt -s -l .)"
 
+# Offline helper safety tests require Python 3; no live endpoint is contacted.
+script-test:
+    python3 -B -I -m unittest discover -s scripts -p 'test_capture*.py'
+
 check: fmt-check lint test
 
 golden:
