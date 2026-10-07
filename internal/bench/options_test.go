@@ -2,6 +2,7 @@ package bench
 
 import (
 	"errors"
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -30,6 +31,37 @@ func TestValidateAcceptsValidOptions(t *testing.T) {
 	t.Parallel()
 	if err := validOptions().Validate(); err != nil {
 		t.Fatalf("Validate() = %v", err)
+	}
+}
+
+func TestValidateExternalOptions(t *testing.T) {
+	t.Parallel()
+	o := validOptions()
+	o.External, o.KeepAlive, o.Generation.ContextSize = true, 0, 0
+	if err := o.Validate(); err != nil {
+		t.Fatalf("server-managed options: Validate() = %v", err)
+	}
+	for _, tt := range []struct {
+		name   string
+		change func(*Options)
+		want   string
+	}{
+		{"negative context", func(o *Options) { o.Generation.ContextSize = -1 }, "num_ctx must not be negative"},
+		{"keep-alive", func(o *Options) { o.KeepAlive = time.Minute }, "external endpoints do not support keep-alive"},
+		{"negative keep-alive", func(o *Options) { o.KeepAlive = -1 }, "external endpoints do not support keep-alive"},
+		{"no tokens", func(o *Options) { o.Generation.MaxTokens = 0 }, "num_predict must be 1 or more"},
+		{"negative interval", func(o *Options) { o.Interval = -1 }, "interval must not be negative"},
+		{"no timeout", func(o *Options) { o.RequestTimeout = 0 }, "request timeout must be longer than 0"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			bad := o
+			tt.change(&bad)
+			err := bad.Validate()
+			if !errors.Is(err, ErrInvalidOptions) || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("Validate() = %v, want %q", err, tt.want)
+			}
+		})
 	}
 }
 
@@ -82,6 +114,15 @@ func TestValidateReportsAllProblems(t *testing.T) {
 	for _, want := range []string{"at least one model", "runs must be", "num_predict"} {
 		if err == nil || !strings.Contains(err.Error(), want) {
 			t.Errorf("Validate() = %v, want %q in it", err, want)
+		}
+	}
+}
+
+func TestDefaultKeepAliveSaturatesWithoutOverflow(t *testing.T) {
+	ceiling := time.Duration(math.MaxInt64)
+	for _, interval := range []time.Duration{ceiling - keepAliveMargin, ceiling - keepAliveMargin + 1, ceiling - 1, ceiling} {
+		if got := DefaultKeepAlive(interval); got != ceiling {
+			t.Errorf("DefaultKeepAlive(%s) = %s, want maximum %s", interval, got, ceiling)
 		}
 	}
 }

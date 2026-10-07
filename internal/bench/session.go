@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	"dyno/internal/domain"
 	"dyno/internal/event"
@@ -40,13 +41,24 @@ func (r *Runner) newSessionRun(id domain.SessionID, models []domain.Model) *sess
 	}
 }
 
+const maxConsecutiveModelFailures = 3
+
 // execute runs the steps in order. It returns the final status, the number
-// of failed steps, and the error of the session. A failed step does not stop
-// the session, but the error counts the failed steps.
+// of failed steps, and the error of the session. Ordinary request failures
+// continue; unavailable transport or a failed external warm-up ends the session.
 func (s *sessionRun) execute(ctx context.Context, steps []domain.Step) (domain.SessionStatus, int, error) {
 	last := lastStepOfModel(steps)
 	failed := 0
+	consecutive := make(map[string]int)
+	blocked := make(map[string]bool)
+	var limitErr error
 	for i, step := range steps {
+		if err := ctx.Err(); err != nil {
+			return domain.StatusAborted, failed, err
+		}
+		if blocked[step.Model] {
+			continue // already reported this model's limit; other models still run
+		}
 		s.sink.Publish(event.StepStarted{Index: i, Total: len(steps), Step: step})
 		err := s.runStep(ctx, step)
 		switch {
@@ -56,18 +68,33 @@ func (s *sessionRun) execute(ctx context.Context, steps []domain.Step) (domain.S
 			return domain.StatusFailed, failed, err
 		case err != nil:
 			failed++
+			consecutive[step.Model]++
 			s.sink.Publish(event.StepFailed{Step: step, Err: err})
+			if s.opts.External && !s.life.ready[step.Model] {
+				// External warm-up validates readiness/request policy. Do not
+				// retry it or proceed to primers/runs after a failed warm-up.
+				return domain.StatusFailed, failed, err
+			}
+			if s.opts.External && consecutive[step.Model] >= maxConsecutiveModelFailures {
+				blocked[step.Model] = true
+				limitErr = errors.Join(limitErr, fmt.Errorf("stopped model %s after %d consecutive failed steps: %w", step.Model, maxConsecutiveModelFailures, err))
+			}
+		default:
+			consecutive[step.Model] = 0
 		}
 		if i == last[step.Model] {
 			// A model that fails to unload stays held, and releaseAll
 			// reports the error at the end.
 			_ = s.life.release(ctx, step.Model)
 		}
-		if i < len(steps)-1 {
+		if i < len(steps)-1 && (len(blocked) == 0 || slices.ContainsFunc(steps[i+1:], func(next domain.Step) bool { return !blocked[next.Model] })) {
 			if err := s.wait(ctx); err != nil {
 				return domain.StatusAborted, failed, err
 			}
 		}
+	}
+	if limitErr != nil {
+		return domain.StatusFailed, failed, limitErr
 	}
 	return domain.StatusCompleted, failed, failedSteps(failed, len(steps))
 }
@@ -102,9 +129,9 @@ func (s *sessionRun) executor(step domain.Step, model domain.Model, primers int)
 func (s *sessionRun) progress(step domain.Step) llm.ProgressFunc {
 	start := s.clock.Now()
 	limit := newThrottle(s.clock, s.opts.progressEvery())
-	return func(tokens int) {
+	return func(chunks int) {
 		if limit.allow() {
-			s.sink.Publish(event.Progress{Step: step, Tokens: tokens, Elapsed: s.clock.Now().Sub(start)})
+			s.sink.Publish(event.Progress{Step: step, Chunks: chunks, Unit: event.ProgressChunks, Elapsed: s.clock.Now().Sub(start)})
 		}
 	}
 }

@@ -27,14 +27,21 @@ type Runner struct {
 	cleanup   time.Duration // the limit of the cleanup; tests make it short
 }
 
-// NewRunner validates the options and the dependencies and builds one
-// scenario for each cache mode. It returns the error of Options.Validate
-// unchanged.
+// NewRunner copies and normalizes the options, detects lifecycle ownership,
+// validates the options and dependencies, and builds one scenario per cache mode.
+// It returns the error of Options.Validate unchanged.
 func NewRunner(d Deps, o Options) (*Runner, error) {
+	if err := d.check(); err != nil {
+		return nil, err
+	}
+	o.Models = llm.NormalizeModelNames(d.Client, o.Models)
+	o.CacheModes = slices.Clone(o.CacheModes)
+	_, managed := d.Client.(llm.ManagedLifecycle)
+	o.External = !managed
 	if err := o.Validate(); err != nil {
 		return nil, err
 	}
-	if err := d.check(); err != nil {
+	if err := validateClientOptions(d.Client, o); err != nil {
 		return nil, err
 	}
 	scenarios, err := newScenarios(d, o)
@@ -42,6 +49,32 @@ func NewRunner(d Deps, o Options) (*Runner, error) {
 		return nil, err
 	}
 	return &Runner{deps: d, opts: o, scenarios: scenarios, cleanup: cleanupTimeout}, nil
+}
+
+// validateClientOptions checks adapter policies before any session is recorded.
+// External continuation remains disabled until cache reuse is live-validated.
+func validateClientOptions(client llm.Client, o Options) error {
+	validator, validates := client.(llm.OptionsValidator)
+	if validates {
+		if err := validator.ValidateOptions(o.Generation, slices.Clone(o.CacheModes)); err != nil {
+			return fmt.Errorf("%w: %w", ErrInvalidOptions, err)
+		}
+	}
+	if !o.External {
+		return nil
+	}
+	if !validates && o.Generation.ContextSize != 0 {
+		return fmt.Errorf("%w: external context size is server-managed without a validated adapter policy", ErrInvalidOptions)
+	}
+	if slices.Contains(o.CacheModes, domain.CacheContinue) {
+		return fmt.Errorf("%w: external cache mode continue requires live-validated cache reuse and is not implemented", ErrInvalidOptions)
+	}
+	if slices.Contains(o.CacheModes, domain.CachePrefix) {
+		if _, ok := client.(llm.CacheResetter); !ok {
+			return fmt.Errorf("%w: external cache mode prefix requires a real cache reset", ErrInvalidOptions)
+		}
+	}
+	return nil
 }
 
 // check returns an error that names every nil dependency of d.
@@ -86,11 +119,17 @@ func newScenarios(d Deps, o Options) (map[domain.CacheMode]scenario.Scenario, er
 // ends before its first step. It returns an error when a step failed, even
 // though the status is completed.
 func (r *Runner) Run(ctx context.Context) (domain.SessionID, error) {
-	version, models, err := r.preflight(ctx)
+	info, models, err := r.preflight(ctx)
 	if err != nil {
 		return "", err
 	}
-	session := r.newSession(version)
+	session := r.newSession(info)
+	for i := range models {
+		if models[i].Digest == "" && models[i].Identity == "" {
+			models[i].Identity = fmt.Sprintf("session:%s:%s", session.ID, models[i].Name)
+			models[i].IdentitySource = "session"
+		}
+	}
 	if err := r.deps.Recorder.StartSession(ctx, session); err != nil {
 		return "", fmt.Errorf("start session: %w", err)
 	}
@@ -107,22 +146,48 @@ func (r *Runner) Run(ctx context.Context) (domain.SessionID, error) {
 	return session.ID, runErr
 }
 
-// preflight returns the server version and the selected models in the order
-// of the options. It writes nothing.
-func (r *Runner) preflight(ctx context.Context) (string, []domain.Model, error) {
+// preflight returns optional server facts and the selected models in option
+// order. Unknown version or metadata does not prevent inference. It writes nothing.
+func (r *Runner) preflight(ctx context.Context) (llm.ServerInfo, []domain.Model, error) {
 	version, err := r.deps.Client.Version(ctx)
 	if err != nil {
-		return "", nil, fmt.Errorf("server version: %w", err)
+		return llm.ServerInfo{}, nil, fmt.Errorf("server version: %w", err)
+	}
+	var info llm.ServerInfo
+	if provider, ok := r.deps.Client.(llm.InfoProvider); ok {
+		info, err = provider.Info(ctx)
+		if err != nil {
+			return llm.ServerInfo{}, nil, fmt.Errorf("server info: %w", err)
+		}
+	}
+	if info.Version == "" {
+		info.Version = version
+	}
+	if r.opts.External {
+		// Absence of metadata must not select Session's legacy Ollama defaults.
+		// Lifecycle ownership alone cannot identify the external wire protocol.
+		if info.Backend == "" {
+			info.Backend = "unknown"
+		}
+		if info.ServerKind == "" {
+			info.ServerKind = "unknown"
+		}
+		if info.MeasurementProtocol == "" {
+			info.MeasurementProtocol = "unknown"
+		}
+		if info.ContextPolicy == "" {
+			info.ContextPolicy = "server-managed"
+		}
 	}
 	all, err := r.deps.Client.Models(ctx, r.opts.Models...)
 	if err != nil {
-		return "", nil, fmt.Errorf("list models: %w", err)
+		return llm.ServerInfo{}, nil, fmt.Errorf("list models: %w", err)
 	}
 	models, err := selectModels(all, r.opts.Models)
 	if err != nil {
-		return "", nil, err
+		return llm.ServerInfo{}, nil, err
 	}
-	return version, models, nil
+	return info, models, nil
 }
 
 // selectModels returns the models with names in the order of names. Its
@@ -145,20 +210,27 @@ func selectModels(all []domain.Model, names []string) ([]domain.Model, error) {
 }
 
 // newSession returns the session row. It starts now.
-func (r *Runner) newSession(version string) domain.Session {
+func (r *Runner) newSession(info llm.ServerInfo) domain.Session {
 	start := r.deps.Clock.Now()
 	return domain.Session{
-		ID:            domain.NewSessionID(start, r.deps.IDs.Next()),
-		StartedAt:     start,
-		ToolVersion:   r.deps.Meta.Tool,
-		ServerVersion: version,
-		Host:          r.deps.Meta.Host,
-		Tag:           r.opts.Tag,
-		Workload:      r.opts.Workload(),
-		Order:         r.opts.Order,
-		Interval:      r.opts.Interval,
-		Runs:          r.opts.Runs,
-		CacheModes:    slices.Clone(r.opts.CacheModes),
+		ID:                  domain.NewSessionID(start, r.deps.IDs.Next()),
+		StartedAt:           start,
+		ToolVersion:         r.deps.Meta.Tool,
+		ServerVersion:       info.Version,
+		Backend:             info.Backend,
+		ServerKind:          info.ServerKind,
+		VersionSource:       info.VersionSource,
+		Endpoint:            info.Endpoint,
+		MeasurementProtocol: info.MeasurementProtocol,
+		ContextPolicy:       info.ContextPolicy,
+		ConfigJSON:          info.ConfigJSON,
+		Host:                r.deps.Meta.Host,
+		Tag:                 r.opts.Tag,
+		Workload:            r.opts.Workload(),
+		Order:               r.opts.Order,
+		Interval:            r.opts.Interval,
+		Runs:                r.opts.Runs,
+		CacheModes:          slices.Clone(r.opts.CacheModes),
 	}
 }
 

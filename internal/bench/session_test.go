@@ -427,7 +427,7 @@ func TestRunThrottlesProgress(t *testing.T) {
 			var tokens []int
 			var elapsed []time.Duration
 			for _, p := range eventtest.Of[event.Progress](h.events) {
-				tokens = append(tokens, p.Tokens)
+				tokens = append(tokens, p.Chunks)
 				elapsed = append(elapsed, p.Elapsed/time.Millisecond)
 				if p.Step != (domain.Step{Model: "a", Mode: domain.CacheMiss, Run: 1}) {
 					t.Errorf("Progress step = %s", p.Step)
