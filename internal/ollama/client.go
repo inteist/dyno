@@ -32,7 +32,25 @@ type Client struct {
 	now func() time.Time
 }
 
-var _ llm.Client = (*Client)(nil)
+var (
+	_ llm.Client           = (*Client)(nil)
+	_ llm.ManagedLifecycle = (*Client)(nil)
+	_ llm.InfoProvider     = (*Client)(nil)
+	_ llm.NameNormalizer   = (*Client)(nil)
+)
+
+// NormalizeModelName applies only this provider's default-tag convention.
+func (c *Client) NormalizeModelName(name string) string { return domain.NormalizeModelName(name) }
+
+// Info supplies native protocol facts. Version is queried separately by preflight;
+// historical endpoint identity stays unknown rather than guessing the SDK's URL.
+func (c *Client) Info(context.Context) (llm.ServerInfo, error) {
+	return llm.ServerInfo{
+		Backend: domain.BackendOllama, ServerKind: domain.BackendOllama, VersionSource: "api",
+		MeasurementProtocol: domain.ProtocolOllama, ContextPolicy: domain.NativeContextPolicy,
+		ConfigJSON: domain.NativeConfigJSON,
+	}, nil
+}
 
 // New returns a client for host. An empty host uses OLLAMA_HOST or the
 // default address. A host has the form of OLLAMA_HOST, such as "host:port"

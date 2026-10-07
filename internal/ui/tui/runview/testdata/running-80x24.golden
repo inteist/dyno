@@ -4,7 +4,7 @@
  ▸ qwen3.5:4b-mlx  ━━━─── 1/2  ━━━─── 1/2  prefix: 56.1 tok/s · ttft 318 ms
    lfm2.5:8b       ────── 0/2  ────── 0/2
 
- ⠋ qwen3.5:4b-mlx · prefix · run 2 · 214/512 tokens · 56.1 tok/s
+ ⠋ qwen3.5:4b-mlx · prefix · run 2 · streaming 214 chunks · elapsed 4.12 s
  1 failed step · last error: chat qwen3.5:4b-mlx: unexpected EOF
 
  step 4/8                                       q stop · finished runs are saved

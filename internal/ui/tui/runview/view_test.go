@@ -108,7 +108,7 @@ func TestTallFinalFrameGoesIntoTheHistory(t *testing.T) {
 		for _, mode := range modes {
 			steps = append(steps, step(model, mode, 1))
 			r.Groups = append(r.Groups, report.Group{
-				Key: report.Key{Model: model, Mode: string(mode)}, Decode: spreadOf(1, 56, 0),
+				Key: report.Key{Model: model, Mode: string(mode)}, Valid: 1, Decode: spreadOf(1, 56, 0),
 				Prefill: median(1, 300), TTFT: median(1, 320), CachedShare: median(1, 0.5),
 			})
 		}
@@ -160,16 +160,17 @@ func TestViewLines(t *testing.T) {
 		{"ready", events(append(begin, event.ModelReady{Model: qwen})), []string{"run 1 · starting"}},
 		{"warm-up", events(append(begin, event.Preparing{Step: steps[0], Action: event.ActionWarmup})), []string{"run 1 · warm-up"}},
 		{"reload", events(append(begin, event.Preparing{Step: steps[0], Action: event.ActionReload})), []string{"run 1 · reload"}},
+		{"cache reset", events(append(begin, event.Preparing{Step: steps[0], Action: event.ActionResetCache})), []string{"run 1 · reset cache"}},
 		{"one primer", events(append(begin, event.Preparing{Step: steps[0], Action: event.ActionPrimer, Index: 1, Total: 1})), []string{"run 1 · primer\n"}},
-		{"first token", events(append(begin, event.Progress{Step: steps[0], Tokens: 1, Elapsed: time.Second})), []string{"run 1 · 1/512 tokens\n"}},
+		{"first content chunk", events(append(begin, event.Progress{Step: steps[0], Chunks: 1, Elapsed: time.Second})), []string{"run 1 · streaming 1 chunk · elapsed 1 s\n"}},
 		{
 			"no token limit",
 			events([]event.Event{
 				event.SessionStarted{Session: noLimit, Steps: steps}, started(0),
-				event.Progress{Step: steps[0], Tokens: 1, Elapsed: time.Second},
-				event.Progress{Step: steps[0], Tokens: 51, Elapsed: 2 * time.Second},
+				event.Progress{Step: steps[0], Chunks: 1, Elapsed: time.Second},
+				event.Progress{Step: steps[0], Chunks: 51, Elapsed: 2 * time.Second},
 			}),
-			[]string{"session 20261005T120212Z-K3F9A2 · prompt long · 2 runs\n", "run 1 · 51 tokens · 50.0 tok/s"},
+			[]string{"session 20261005T120212Z-K3F9A2 · prompt long · 2 runs\n", "run 1 · streaming 51 chunks · elapsed 2 s"},
 		},
 		{"finished", events(append(begin, finished(steps[0], measurement(9242*time.Millisecond, 0, 2236*time.Millisecond, 0)))), []string{"✓ qwen3.5:4b-mlx · miss · run 1 · 55.4 tok/s · ttft 2.24 s"}},
 		{"failed", events(append(begin, event.StepFailed{Step: steps[0], Err: errEOF})), []string{
@@ -254,7 +255,7 @@ func TestDropOrder(t *testing.T) {
 		{0, 6, []int{5}},
 		{1, 7, []int{6}},
 		{2, 8, []int{7}},
-		{all, 10, []int{1, 2, 9}},
+		{all, 14, []int{1, 2, 3, 4, 5, 6, 13}},
 	}
 	for _, tt := range tests {
 		got := dropOrder(tt.dims, tt.cols)
@@ -275,22 +276,19 @@ func TestReportLinesKeepColumnsThatFit(t *testing.T) {
 	t.Parallel()
 	m := New(nil)
 	r := allTimeReport()
-	wide := m.reportLines(format.AllTimeTitle, r, 200)
-	narrow := m.reportLines(format.AllTimeTitle, r, 20)
-	dropped := []string{report.ByDigest.Header(), report.ByServer.Header(), "EXCLUDED"}
-	for _, header := range dropped {
-		if !strings.Contains(wide[1], header) {
-			t.Errorf("a wide table lacks %s: %q", header, wide[1])
+	wide := ansi.Strip(strings.Join(m.reportLines(format.AllTimeTitle, r, 200), "\n"))
+	narrow := ansi.Strip(strings.Join(m.reportLines(format.AllTimeTitle, r, 80), "\n"))
+	for _, header := range []string{report.ByServer.Header(), "EXCLUDED", "PREFILL"} {
+		if !strings.Contains(wide, header) {
+			t.Errorf("a wide report lacks %s: %q", header, wide)
 		}
 	}
-	for _, header := range dropped {
-		if strings.Contains(narrow[1], header) {
-			t.Errorf("a narrow table keeps %s: %q", header, narrow[1])
+	for _, header := range []string{report.ByModel.Header(), report.ByMode.Header(), "PREFILL"} {
+		if !strings.Contains(narrow, header) {
+			t.Errorf("a narrow table hides distinguishing %s: %q", header, narrow)
 		}
 	}
-	if !strings.Contains(narrow[1], "CACHED") {
-		t.Errorf("a narrow table lost the CACHED column: %q", narrow[1])
-	}
+	assertWidth(t, narrow, 80)
 	if got := m.reportLines(format.SessionTitle, report.Report{}, 80); len(got) != 1 {
 		t.Errorf("an empty report has %d lines, want 1", len(got))
 	}

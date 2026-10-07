@@ -45,6 +45,8 @@ func rules() map[string]rule {
 		"internal/bench/benchtest":   {internal: []string{"domain"}},
 		"internal/report":            {internal: []string{"domain", "stats"}},
 		"internal/ollama":            {internal: []string{"domain", "llm"}, thirdParty: []string{"github.com/ollama/ollama"}},
+		"internal/openaicompat":      {internal: []string{"domain", "llm", "endpoint"}, thirdParty: []string{"github.com/openai/openai-go/v3"}},
+		"internal/endpoint":          {},
 		"internal/store/sqlite":      {internal: []string{"domain", "report"}, thirdParty: []string{"modernc.org/sqlite"}},
 		"internal/sysinfo":           {internal: []string{"domain"}},
 		"internal/ui/format":         {internal: []string{"domain", "report", "stats"}},
@@ -53,8 +55,9 @@ func rules() map[string]rule {
 		"internal/ui/tui/theme":      {thirdParty: tuiThirdParty},
 		"internal/ui/tui/runview":    {internal: tuiInternal, thirdParty: tuiThirdParty},
 		"internal/ui/tui/reportview": {internal: tuiInternal, thirdParty: tuiThirdParty},
-		"internal/cli":               {internal: []string{"domain", "llm", "prompt", "bench", "report"}},
+		"internal/cli":               {internal: []string{"domain", "llm", "prompt", "bench", "report", "endpoint"}},
 		"internal/app":               {internal: []string{"*"}, thirdParty: []string{"golang.org/x/term"}},
+		"scripts":                    {}, // offline shell integration tests; no production dependencies
 		"cmd/dyno":                   {internal: []string{"cli", "app"}},
 	}
 }

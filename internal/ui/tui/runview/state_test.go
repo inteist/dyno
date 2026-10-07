@@ -74,8 +74,8 @@ func TestApplyPhases(t *testing.T) {
 			func(c Current) bool { return c.Phase == PhasePrimer && c.Action == 2 && c.Actions == 3 },
 		},
 		{
-			"progress", event.Progress{Step: s, Tokens: 9, Elapsed: time.Second},
-			func(c Current) bool { return c.Phase == PhaseRunning && c.Tokens == 9 && c.Elapsed == time.Second },
+			"progress", event.Progress{Step: s, Chunks: 9, Elapsed: time.Second},
+			func(c Current) bool { return c.Phase == PhaseRunning && c.Chunks == 9 && c.Elapsed == time.Second },
 		},
 		{"finished", finished(s, measurement(time.Second, 0, 0, 0)), func(c Current) bool { return c.Phase == PhaseFinished && c.Result.Server.EvalTokens == 512 }},
 		{"failed", event.StepFailed{Step: s, Err: errEOF}, func(c Current) bool { return c.Phase == PhaseFailed && errors.Is(c.Err, errEOF) }},
@@ -165,25 +165,21 @@ func TestApplyIgnoresUnknownModelsAndEvents(t *testing.T) {
 	}
 }
 
-func TestRate(t *testing.T) {
+func TestProgressReplacesChunksAndResetsAtNextStep(t *testing.T) {
 	t.Parallel()
-	s := sessionSteps()[0]
-	first := event.Progress{Step: s, Tokens: 1, Elapsed: 2 * time.Second}
+	step := sessionSteps()[0]
 	base := apply([]event.Event{started(0)})
-	if _, ok := base.Current.Rate(); ok {
-		t.Error("a rate before any progress")
+	one := base.Apply(event.Progress{Step: step, Chunks: 1, Elapsed: 2 * time.Second})
+	two := one.Apply(event.Progress{Step: step, Chunks: 101, Elapsed: 4 * time.Second})
+	if c := two.Current; c.Chunks != 101 || c.Elapsed != 4*time.Second {
+		t.Errorf("latest chunk progress = %+v", c)
 	}
-	one := base.Apply(first)
-	if _, ok := one.Current.Rate(); ok {
-		t.Error("a rate after one progress")
+	if one.Current.Chunks != 1 || one.Current.Elapsed != 2*time.Second {
+		t.Error("progress mutated an earlier state")
 	}
-	two := one.Apply(event.Progress{Step: s, Tokens: 101, Elapsed: 4 * time.Second})
-	if rate, ok := two.Current.Rate(); !ok || rate != 50 {
-		t.Errorf("rate = %v, %v, want 50 tokens per second without the prefill", rate, ok)
-	}
-	next := two.Apply(started(1)).Apply(event.Progress{Step: sessionSteps()[1], Tokens: 5, Elapsed: time.Second})
-	if c := next.Current; c.FirstTokens != 5 || c.FirstElapsed != time.Second {
-		t.Errorf("the next step kept the first progress %d, %v", c.FirstTokens, c.FirstElapsed)
+	next := two.Apply(started(1))
+	if c := next.Current; c.Chunks != 0 || c.Elapsed != 0 {
+		t.Errorf("the next step kept earlier chunk progress: %+v", c)
 	}
 }
 

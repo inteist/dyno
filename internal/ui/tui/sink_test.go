@@ -15,7 +15,7 @@ func TestSinkDropsOnlyLossyEventsWhenFull(t *testing.T) {
 	for range sinkBuffer {
 		s.Publish(event.Progress{})
 	}
-	s.Publish(event.Progress{Tokens: 1}) // dropped: the buffer is full
+	s.Publish(event.Progress{Chunks: 1}) // dropped: the buffer is full
 
 	sent := make(chan struct{})
 	go func() {

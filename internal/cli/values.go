@@ -67,10 +67,6 @@ func parseList[T any](s string, parse func(string) (T, error)) ([]T, error) {
 // asIs converts a list item without a check.
 func asIs[T ~string](s string) (T, error) { return T(s), nil }
 
-// modelName returns s with the default tag when s has no tag, so that a
-// name matches the names of the server.
-func modelName(s string) (string, error) { return domain.NormalizeModelName(s), nil }
-
 // orderValue returns a flag.Value for a domain.Order.
 func orderValue(target *domain.Order) flag.Value {
 	return &value[domain.Order]{

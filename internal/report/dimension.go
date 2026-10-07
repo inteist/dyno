@@ -10,25 +10,30 @@ import (
 type Dimension string
 
 const (
-	ByModel    Dimension = "model"
-	ByDigest   Dimension = "digest"
-	ByServer   Dimension = "server"
-	ByWorkload Dimension = "workload"
-	ByMode     Dimension = "mode"
-	ByTag      Dimension = "tag"
-	ByDay      Dimension = "day"
-	ByWeek     Dimension = "week"
-	BySession  Dimension = "session"
+	ByModel       Dimension = "model"
+	ByDigest      Dimension = "digest"   // historical name for the full storage identity
+	ByModelID     Dimension = "model-id" // same identity as digest
+	ByBackend     Dimension = "backend"
+	ByEngine      Dimension = "engine"
+	ByEndpoint    Dimension = "endpoint"
+	ByMeasurement Dimension = "measurement"
+	ByServer      Dimension = "server"
+	ByWorkload    Dimension = "workload"
+	ByMode        Dimension = "mode"
+	ByTag         Dimension = "tag"
+	ByDay         Dimension = "day"
+	ByWeek        Dimension = "week"
+	BySession     Dimension = "session"
 )
 
 // Dimensions returns every dimension.
 func Dimensions() []Dimension {
-	return []Dimension{ByModel, ByDigest, ByServer, ByWorkload, ByMode, ByTag, ByDay, ByWeek, BySession}
+	return []Dimension{ByModel, ByDigest, ByModelID, ByBackend, ByEngine, ByEndpoint, ByServer, ByMeasurement, ByWorkload, ByMode, ByTag, ByDay, ByWeek, BySession}
 }
 
 // DefaultDimensions keep apart all runs that are not comparable.
 func DefaultDimensions() []Dimension {
-	return []Dimension{ByModel, ByDigest, ByServer, ByWorkload, ByMode}
+	return []Dimension{ByModel, ByModelID, ByBackend, ByEngine, ByEndpoint, ByServer, ByMeasurement, ByWorkload, ByMode}
 }
 
 // ParseDimension converts user input into a Dimension.

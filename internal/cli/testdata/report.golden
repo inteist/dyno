@@ -3,9 +3,10 @@ dyno report: summarize the stored runs
 Usage: dyno report [options]
 
 Options:
+  --backend names      comma-separated backend names: ollama, openai
   --cache modes        comma-separated cache modes: miss, continue, prefix
   --db path            database path (default /home/max/.local/share/dyno/bench.db)
-  --group dimensions   comma-separated dimensions: model, digest, server, workload, mode, tag, day, week, session (default model, digest, server, workload, mode)
+  --group dimensions   comma-separated dimensions: model, digest, model-id, backend, engine, endpoint, server, measurement, workload, mode, tag, day, week, session (default model, model-id, backend, engine, endpoint, server, measurement, workload, mode)
   --model names        comma-separated model names
   --plain              a plain table, also in a terminal
   --prompt names       comma-separated prompt names

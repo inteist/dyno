@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"database/sql"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,13 +40,28 @@ func TestRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	storedSession := s
+	storedSession.Backend, storedSession.ServerKind, storedSession.VersionSource = "ollama", "ollama", "server"
+	storedSession.MeasurementProtocol, storedSession.ContextPolicy = "ollama-server-v1", "request"
+	storedQwen, storedLFM := qwen, lfm
+	storedQwen.Identity, storedQwen.IdentitySource = "sha256:aaaa0000aaaa0000", "digest"
+	storedLFM.Identity, storedLFM.IdentitySource = "sha256:bbbb1111bbbb1111", "digest"
+	storedQwen.MetadataAvailable = &domain.ModelMetadataAvailability{SizeBytes: true}
+	storedLFM.MetadataAvailable = &domain.ModelMetadataAvailability{SizeBytes: true}
 	want := []report.Row{
-		wantRow(s, qwen, runMiss),
-		wantRow(s, qwen, runContinue),
-		wantRow(s, qwen, runAlias),
-		wantRow(s, lfm, runFailed),
-		wantRow(s, lfm, runSameStart),
+		wantRow(storedSession, storedQwen, runMiss),
+		wantRow(storedSession, storedQwen, runContinue),
+		wantRow(storedSession, storedQwen, runAlias),
+		wantRow(storedSession, storedLFM, runFailed),
+		wantRow(storedSession, storedLFM, runSameStart),
 	}
+	for _, i := range []int{0, 1, 2, 4} {
+		want[i].Measurement.Server.Available = &domain.MetricAvailability{
+			PromptTokens: true, CachedTokens: true, PromptDuration: true, EvalTokens: true,
+			EvalDuration: true, LoadDuration: true, TotalDuration: true,
+		}
+	}
+	want[3].Measurement = domain.Measurement{Server: domain.ServerMetrics{Available: &domain.MetricAvailability{}}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Rows() =\n%+v\nwant\n%+v", got, want)
 	}
@@ -52,6 +69,67 @@ func TestRoundTrip(t *testing.T) {
 	checkSessionRow(t, db, s)
 	checkModelRows(t, db, qwen, seen)
 	checkStoredMetrics(t, db)
+}
+
+func TestSessionProvenanceFacts(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name  string
+		facts domain.Session
+		want  []any
+	}{
+		{
+			name: "legacy native without a version",
+			want: []any{"ollama", "ollama", nil, "ollama-server-v1", "request"},
+		},
+		{
+			name:  "legacy native with a known version",
+			facts: domain.Session{ServerVersion: "0.34.0"},
+			want:  []any{"ollama", "ollama", "server", "ollama-server-v1", "request"},
+		},
+		{
+			name: "explicit native adapter provenance is not legacy policy",
+			facts: domain.Session{
+				Backend: "ollama", ServerKind: "ollama", ServerVersion: "0.34.0", VersionSource: "api",
+				MeasurementProtocol: "ollama-server-v1", ContextPolicy: "request-controlled",
+			},
+			want: []any{"ollama", "ollama", "api", "ollama-server-v1", "request-controlled"},
+		},
+		{
+			name:  "external unknown protocol stays unknown",
+			facts: domain.Session{Backend: "openai"},
+			want:  []any{"openai", "unknown", nil, "unknown", "server-managed"},
+		},
+		{
+			name: "external supplied provenance",
+			facts: domain.Session{
+				Backend: "openai", ServerKind: "vllm", ServerVersion: "0.31.0", VersionSource: "operator",
+				MeasurementProtocol: "openai-client-v1", ContextPolicy: "operator-policy",
+			},
+			want: []any{"openai", "vllm", "operator", "openai-client-v1", "operator-policy"},
+		},
+		{
+			name:  "only the canonical native backend gets native defaults",
+			facts: domain.Session{Backend: "Ollama", ServerVersion: "operator-value"},
+			want:  []any{"Ollama", "unknown", nil, "unknown", "server-managed"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			db := openTest(t)
+			s := testSession("facts", day(5), "", "short", 64)
+			s.Backend, s.ServerKind, s.ServerVersion, s.VersionSource = tc.facts.Backend, tc.facts.ServerKind, tc.facts.ServerVersion, tc.facts.VersionSource
+			s.MeasurementProtocol, s.ContextPolicy = tc.facts.MeasurementProtocol, tc.facts.ContextPolicy
+			if err := NewRecorder(db).StartSession(t.Context(), s); err != nil {
+				t.Fatal(err)
+			}
+			got := snapshotRows(t, db, `SELECT backend, server_kind, version_source,
+				measurement_protocol, context_policy FROM sessions WHERE id = 'facts'`)
+			if want := [][]any{tc.want}; !reflect.DeepEqual(got, want) {
+				t.Errorf("stored provenance = %v, want explicit facts %v", got, want)
+			}
+		})
+	}
 }
 
 // checkSessionRow compares the columns that Row does not return.
@@ -159,6 +237,46 @@ func TestSaveExchangeChecksReferences(t *testing.T) {
 	}
 	if n := queryValue[int](t, db, "SELECT COUNT(*) FROM exchanges"); n != 0 {
 		t.Errorf("%d exchanges were stored, want 0", n)
+	}
+}
+
+func TestSaveExchangeRejectsMissingStorageIdentity(t *testing.T) {
+	t.Parallel()
+	for _, legacyEmptyKey := range []bool{false, true} {
+		name := "new database"
+		if legacyEmptyKey {
+			name = "migrated legacy empty key"
+		}
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			var db *sql.DB
+			if legacyEmptyKey {
+				path := filepath.Join(t.TempDir(), "legacy.db")
+				old := legacyEmptyKeyDatabase(t, path)
+				if err := old.Close(); err != nil {
+					t.Fatal(err)
+				}
+				db = openPath(t, path)
+			} else {
+				db = openTest(t)
+			}
+			rec := NewRecorder(db)
+			s := testSession("keyless", day(5), "", "short", 64)
+			if err := rec.StartSession(t.Context(), s); err != nil {
+				t.Fatal(err)
+			}
+			before := queryValue[int](t, db, "SELECT COUNT(*) FROM exchanges")
+			for _, model := range []domain.Model{{}, {Name: "unidentified"}} {
+				x := exchange(s, model, domain.KindRun, domain.CacheMiss, 1, day(5), measurement(1))
+				err := rec.SaveExchange(t.Context(), x)
+				if err == nil || !strings.Contains(err.Error(), "missing storage identity") {
+					t.Errorf("SaveExchange(%+v) = %v, want identity rejection before INSERT", model, err)
+				}
+			}
+			if got := queryValue[int](t, db, "SELECT COUNT(*) FROM exchanges"); got != before {
+				t.Errorf("keyless requests appended exchanges: %d, want %d", got, before)
+			}
+		})
 	}
 }
 

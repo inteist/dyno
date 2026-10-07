@@ -1,14 +1,14 @@
 
 this session · 8 runs · 7 valid · 1 session · 2026-10-05
-MODEL           DIGEST        SERVER  WORKLOAD      MODE    N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
-qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  21e02d1b0274  miss    1    55.4 ± 0.0       2,207    2,236     0 %  1 failed
-qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  21e02d1b0274  prefix  2    56.1 ± 0.2         302      318    75 %
-lfm2.5:8b       4a6e7ed5d0e8  0.34.0  21e02d1b0274  miss    2   151.2 ± 1.1         999    1,013     0 %
-lfm2.5:8b       4a6e7ed5d0e8  0.34.0  21e02d1b0274  prefix  2   151.0 ± 0.4         122      134    75 %
+MODEL           MODE    N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
+qwen3.5:4b-mlx  miss    1    55.4 ± 0.0       2,207    2,236     0 %  1 failed
+qwen3.5:4b-mlx  prefix  2    56.1 ± 0.2         302      318    75 %
+lfm2.5:8b       miss    2   151.2 ± 1.1         999    1,013     0 %
+lfm2.5:8b       prefix  2   151.0 ± 0.4         122      134    75 %
 
 all sessions with this workload · 186 runs · 178 valid · 23 sessions · 2026-10-05 → 2026-11-02
-MODEL           DIGEST        SERVER  WORKLOAD      MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
-qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  21e02d1b0274  miss    60    56.2 ± 0.8       1,941    1,958     0 %  2 short
-qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  21e02d1b0274  prefix  60    56.0 ± 0.9          56       71    99 %
-lfm2.5:8b       4a6e7ed5d0e8  0.34.0  21e02d1b0274  miss     0             -           -        -       -  3 failed
-lfm2.5:8b       4a6e7ed5d0e8  0.34.0  21e02d1b0274  prefix  58   151.3 ± 2.1         302      318    75 %  1 failed, 1 load-in-run
+MODEL           DIGEST        SERVER  MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
+qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  miss    60    56.2 ± 0.8       1,941    1,958     0 %  2 short
+qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  prefix  60    56.0 ± 0.9          56       71    99 %
+lfm2.5:8b       4a6e7ed5d0e8  0.34.0  miss     0             -           -        -       -  3 failed
+lfm2.5:8b       4a6e7ed5d0e8  0.34.0  prefix  58   151.3 ± 2.1         302      318    75 %  1 failed, 1 load-in-run

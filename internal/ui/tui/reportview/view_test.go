@@ -23,7 +23,7 @@ func TestViewGolden(t *testing.T) {
 		keys []string
 	}{
 		{"report", sampleReport(8), nil},
-		{"report-ttft-third-group", sampleReport(8), []string{"shift+tab", "down", "down"}},
+		{"report-ttft-third-group", sampleReport(8), []string{"shift+tab", "shift+tab", "shift+tab", "down", "down"}},
 		{"report-help", sampleReport(8), []string{"?"}},
 		{"one-day", sampleReport(1), nil},
 		{"no-valid-run", failedReport(), nil},

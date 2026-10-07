@@ -14,11 +14,12 @@
  lfm2.5:8b       miss    2   151.2 ± 1.1         999    1,013     0 %
  lfm2.5:8b       prefix  2   151.0 ± 0.4         122      134    75 %
 
- all sessions with this workload · 186 runs · 178 valid · 23 sessions · 2026-10…
+ all sessions with this workload · 186 runs · 178 valid · 23 sessions · 2026-10-
+ 05 → 2026-11-02
+ SERVER 0.34.0
  MODEL           MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED
  qwen3.5:4b-mlx  miss    60    56.2 ± 0.8       1,941    1,958     0 %
  qwen3.5:4b-mlx  prefix  60    56.0 ± 0.9          56       71    99 %
  lfm2.5:8b       miss     0             -           -        -       -
  lfm2.5:8b       prefix  58   151.3 ± 2.1         302      318    75 %
-
  q quit

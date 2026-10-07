@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"dyno/internal/domain"
 	"dyno/internal/report"
@@ -19,6 +20,21 @@ const Separator = " · "
 // Missing stands for a value that does not exist, such as the median of no
 // runs.
 const Missing = "-"
+
+// Text preserves known text and marks an unknown textual fact as missing.
+func Text(s string) string {
+	// Historical/operator/server labels must not inject terminal controls or rows.
+	s = strings.Map(func(r rune) rune {
+		if !unicode.IsPrint(r) || r == '\u2028' || r == '\u2029' {
+			return ' '
+		}
+		return r
+	}, s)
+	if s == "" {
+		return Missing
+	}
+	return s
+}
 
 // Int returns n with thousands separators, for example "2,207".
 func Int(n int) string { return grouped(strconv.Itoa(n)) }

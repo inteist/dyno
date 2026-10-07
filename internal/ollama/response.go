@@ -68,7 +68,16 @@ func (s *chatStream) result(end time.Time) (llm.ChatResult, error) {
 }
 
 func toServerMetrics(m api.Metrics) domain.ServerMetrics {
+	var availability *domain.MetricAvailability
+	if m.PromptEvalCachedCount == nil {
+		// Unlike scalar API fields, cached count is optional even on Ollama.
+		availability = &domain.MetricAvailability{
+			PromptTokens: true, PromptDuration: true, EvalTokens: true,
+			EvalDuration: true, LoadDuration: true, TotalDuration: true,
+		}
+	}
 	return domain.ServerMetrics{
+		Available:      availability,
 		PromptTokens:   m.PromptEvalCount,
 		CachedTokens:   valueOrZero(m.PromptEvalCachedCount),
 		PromptDuration: m.PromptEvalDuration,

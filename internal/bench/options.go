@@ -3,6 +3,7 @@ package bench
 import (
 	"errors"
 	"fmt"
+	"math"
 	"slices"
 	"time"
 
@@ -22,13 +23,18 @@ const (
 )
 
 // DefaultKeepAlive returns the larger of 10 minutes and interval plus 5
-// minutes, so that the server keeps a model loaded between two runs.
+// minutes, so that the server keeps a model loaded between two runs. At the
+// duration ceiling, saturate rather than wrapping back to the minimum.
 func DefaultKeepAlive(interval time.Duration) time.Duration {
+	if interval > time.Duration(math.MaxInt64)-keepAliveMargin {
+		return time.Duration(math.MaxInt64)
+	}
 	return max(minKeepAlive, interval+keepAliveMargin)
 }
 
 // Options configure one session. The cli package fills them.
 type Options struct {
+	External       bool // server-managed lifecycle; NewRunner detects it from the client
 	Models         []string
 	Runs           int
 	Interval       time.Duration
@@ -83,6 +89,9 @@ func (o Options) modelProblems() []error {
 
 func (o Options) scheduleProblems() []error {
 	var problems []error
+	if !domain.IsPrintableText(o.Tag) {
+		problems = append(problems, errors.New("tag must be printable text without controls"))
+	}
 	if o.Runs < 1 {
 		problems = append(problems, fmt.Errorf("runs must be 1 or more, not %d", o.Runs))
 	}
@@ -92,7 +101,11 @@ func (o Options) scheduleProblems() []error {
 	if !o.Order.Valid() {
 		problems = append(problems, fmt.Errorf("unknown order %q", o.Order))
 	}
-	if o.KeepAlive <= o.Interval {
+	if o.External {
+		if o.KeepAlive != 0 {
+			problems = append(problems, errors.New("external endpoints do not support keep-alive"))
+		}
+	} else if o.KeepAlive <= o.Interval {
 		problems = append(problems, fmt.Errorf(
 			"the keep-alive %s must be longer than the interval %s, or the server unloads the model between runs",
 			o.KeepAlive, o.Interval))
@@ -125,7 +138,11 @@ func (o Options) requestProblems() []error {
 	if g.MaxTokens < 1 {
 		problems = append(problems, fmt.Errorf("num_predict must be 1 or more, not %d", g.MaxTokens))
 	}
-	if g.ContextSize < 1 {
+	if o.External {
+		if g.ContextSize < 0 {
+			problems = append(problems, fmt.Errorf("num_ctx must not be negative, not %d", g.ContextSize))
+		}
+	} else if g.ContextSize < 1 {
 		problems = append(problems, fmt.Errorf("num_ctx must be 1 or more, not %d", g.ContextSize))
 	}
 	if g.Temperature < 0 {

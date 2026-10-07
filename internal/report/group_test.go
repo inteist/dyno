@@ -36,7 +36,7 @@ func TestBuildGroupsByDimension(t *testing.T) {
 		{name: "model", dims: []Dimension{ByModel}, want: []Key{{Model: "a"}, {Model: "b"}}, sizes: []int{2, 1}},
 		{
 			name: "digest", dims: []Dimension{ByDigest},
-			want: []Key{{Digest: "d1d1d1d1d1d1"}, {Digest: "d2d2d2d2d2d2"}}, sizes: []int{1, 2},
+			want: []Key{{Digest: "d1d1d1d1d1d1ffff"}, {Digest: "d2d2d2d2d2d2ffff"}}, sizes: []int{1, 2},
 		},
 		{name: "server", dims: []Dimension{ByServer}, want: []Key{{Server: "0.33.0"}, {Server: "0.34.0"}}, sizes: []int{1, 2}},
 		{name: "workload", dims: []Dimension{ByWorkload}, want: []Key{{Workload: h1}, {Workload: h2}}, sizes: []int{1, 2}},
@@ -52,9 +52,9 @@ func TestBuildGroupsByDimension(t *testing.T) {
 		{
 			name: "default", dims: DefaultDimensions(),
 			want: []Key{
-				{Model: "a", Digest: "d1d1d1d1d1d1", Server: "0.34.0", Workload: h1, Mode: "prefix"},
-				{Model: "a", Digest: "d2d2d2d2d2d2", Server: "0.34.0", Workload: h2, Mode: "continue"},
-				{Model: "b", Digest: "d2d2d2d2d2d2", Server: "0.33.0", Workload: h2, Mode: "miss"},
+				{Backend: domain.BackendOllama, Engine: domain.BackendOllama, Measurement: domain.ProtocolOllama, Model: "a", Digest: "d1d1d1d1d1d1ffff", Server: "0.34.0", Workload: h1, Mode: "prefix"},
+				{Backend: domain.BackendOllama, Engine: domain.BackendOllama, Measurement: domain.ProtocolOllama, Model: "a", Digest: "d2d2d2d2d2d2ffff", Server: "0.34.0", Workload: h2, Mode: "continue"},
+				{Backend: domain.BackendOllama, Engine: domain.BackendOllama, Measurement: domain.ProtocolOllama, Model: "b", Digest: "d2d2d2d2d2d2ffff", Server: "0.33.0", Workload: h2, Mode: "miss"},
 			},
 			sizes: []int{1, 1, 1},
 		},

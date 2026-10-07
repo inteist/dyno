@@ -17,13 +17,14 @@ import (
 
 // Texts and scales of the charts.
 const (
-	dailyLabel  = "daily median"
-	oneDayHint  = "one day of data: no trend yet"
-	noValidRuns = "no valid runs for this metric in this group"
-	dateStep    = 14  // columns between two date labels; a date takes 10
-	valueStep   = 2   // rows between two value labels
-	rangeMargin = 0.1 // the space above and below the line, as a part of its range
-	barFloor    = 7   // the lowest bar takes 1/(barFloor+1) of the sparkline height
+	dailyLabel        = "daily median"
+	oneDayHint        = "one day of data: no trend yet"
+	noValidRuns       = "no valid runs for this metric in this group"
+	metricUnavailable = "metric unavailable in this group"
+	dateStep          = 14  // columns between two date labels; a date takes 10
+	valueStep         = 2   // rows between two value labels
+	rangeMargin       = 0.1 // the space above and below the line, as a part of its range
+	barFloor          = 7   // the lowest bar takes 1/(barFloor+1) of the sparkline height
 )
 
 // dailyView returns the line chart of the daily medians, or a hint when

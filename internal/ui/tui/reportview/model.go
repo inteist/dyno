@@ -1,6 +1,8 @@
 package reportview
 
 import (
+	"slices"
+
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
@@ -180,6 +182,9 @@ func (m Model) chartHeight(tableRows int) int {
 // rows and the daily chart.
 func (m Model) fixedRows() int {
 	rows := lipgloss.Height(m.headerView()) + sectionGap + tableHeaderRows + sectionGap + chartTextRows
+	if slices.ContainsFunc(m.report.Groups, func(g report.Group) bool { return format.Warnings(g.Warnings) != "" }) {
+		rows++
+	}
 	if h := m.helpView(); h != "" {
 		rows += sectionGap + lipgloss.Height(h)
 	}
@@ -200,8 +205,9 @@ type columnFit struct {
 }
 
 // fitColumns returns the widths that fit cols into width cells. It narrows
-// the gap first. Then it truncates the text columns from the last one, down
-// to minTextWidth, because the first columns name the group. The view clips
+// the gap first. Then it truncates non-identity text columns from the last one,
+// down to minTextWidth. Identity and policy labels retain their display widths
+// so fitting cannot erase their distinguishing suffixes. The view clips
 // what still does not fit.
 func fitColumns[T any](cols []format.Column[T], items []T, width int) columnFit {
 	fit := columnFit{widths: naturalWidths(cols, items), gap: wideGap}
@@ -210,7 +216,7 @@ func fitColumns[T any](cols []format.Column[T], items []T, width int) columnFit 
 	}
 	fit.gap = narrowGap
 	for i := len(cols) - 1; i >= 0 && fit.total() > width; i-- {
-		if cols[i].Right {
+		if cols[i].Right || cols[i].Header == report.ByModelID.Header() || cols[i].Header == report.ByDigest.Header() || cols[i].Header == report.ByMeasurement.Header() {
 			continue
 		}
 		w, over := fit.widths[i], fit.total()-width

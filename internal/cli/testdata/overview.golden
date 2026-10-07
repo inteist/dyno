@@ -1,9 +1,9 @@
 Usage: dyno <command> [options]
 
 Commands:
-  run       --models LIST [options]   execute a session
-  report    [options]                 summarize the stored runs
-  models    [--host URL]              list the local models
-  version                             print the tool version
+  run       --models LIST [options]         execute a session
+  report    [options]                       summarize the stored runs
+  models    [--backend NAME] [--host URL]   list the served models
+  version                                   print the tool version
 
 Run 'dyno <command> -h' for the options of a command.

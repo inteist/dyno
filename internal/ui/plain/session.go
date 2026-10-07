@@ -131,6 +131,7 @@ func sessionStarted(e event.SessionStarted) string {
 		format.Count(len(e.Steps), "step"),
 		"prompt " + e.Session.Workload.PromptName,
 	}
+	parts = append(parts, optional("", format.Provenance(e.Session))...)
 	return joinParts(append(parts, optional("tag ", e.Session.Tag)...))
 }
 
@@ -145,12 +146,19 @@ func preparing(e event.Preparing) string {
 
 // result returns the measured values of a run.
 func result(m domain.Measurement) string {
-	return joinParts([]string{
-		"decode " + format.Rate(report.MetricDecode.Value(m)) + " tok/s",
-		"prefill " + format.Millis(report.MetricPrefill.Value(m)) + " ms",
-		"ttft " + format.Duration(m.Client.TimeToFirstToken),
-		"cached " + format.Percent(m.Server.CachedShare()),
-	})
+	parts := []string{
+		"decode " + format.Metric(m, report.MetricDecode) + " tok/s",
+		"prefill " + format.Metric(m, report.MetricPrefill) + " ms",
+		"ttft " + format.Timing(m.Client.TimeToFirstToken),
+		"cached " + format.Cached(m),
+	}
+	if !report.MetricDecode.Available(m) {
+		parts = append(parts, "latency "+format.Timing(m.Client.Wall), "client completion "+format.Metric(m, report.MetricClientRate)+" tok/s")
+	}
+	if !report.CachedShareAvailable(m) {
+		parts = append(parts, string(report.WarningCacheUnverified))
+	}
+	return joinParts(parts)
 }
 
 func sessionEnded(e event.SessionEnded) string {

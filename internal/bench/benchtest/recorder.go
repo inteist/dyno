@@ -49,14 +49,14 @@ func (r *Recorder) StartSession(ctx context.Context, s domain.Session) error {
 	return nil
 }
 
-// SaveModel keeps m once for each digest.
+// SaveModel keeps m once for each full storage identity.
 func (r *Recorder) SaveModel(ctx context.Context, m domain.Model) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if !slices.ContainsFunc(r.models, func(o domain.Model) bool { return o.Digest == m.Digest }) {
+	if !slices.ContainsFunc(r.models, func(o domain.Model) bool { return o.StorageKey() == m.StorageKey() }) {
 		r.models = append(r.models, m)
 	}
 	return nil

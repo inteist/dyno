@@ -53,9 +53,10 @@ func addFilter(fs *flag.FlagSet, f *report.Filter, loc *time.Location) {
 	fs.Var(dateValue(&f.Since, loc, sinceExtraDays), "since", "first `day` (YYYY-MM-DD) or time (RFC 3339)")
 	fs.Var(dateValue(&f.Until, loc, untilExtraDays), "until",
 		"last `day` (YYYY-MM-DD, inclusive) or time (RFC 3339, exclusive)")
-	fs.Var(listValue(&f.Models, modelName), "model", "comma-separated model `names`")
+	fs.Var(listValue(&f.Models, asIs[string]), "model", "comma-separated model `names`")
 	fs.Var(listValue(&f.CacheModes, domain.ParseCacheMode), "cache",
 		"comma-separated cache `modes`: "+domain.JoinEnum(domain.CacheModes()))
+	fs.Var(listValue(&f.Backends, backendName), "backend", "comma-separated backend `names`: ollama, openai")
 	fs.Var(listValue(&f.Prompts, asIs[string]), "prompt", "comma-separated prompt `names`")
 	fs.Var(listValue(&f.Tags, asIs[string]), "tag", "comma-separated `tags`")
 	fs.Var(listValue(&f.Sessions, asIs[domain.SessionID]), "session", "comma-separated session `IDs`")

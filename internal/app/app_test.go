@@ -83,7 +83,7 @@ func TestSessionWithRealStore(t *testing.T) {
 	}
 	// Each of the 3 groups of the model is in the table and in the
 	// statistics table of each metric.
-	if !strings.Contains(out.String(), "24 runs") || strings.Count(out.String(), "small") != 3*(1+len(report.Metrics())) {
+	if !strings.Contains(out.String(), "24 runs") || strings.Count(out.String(), "small") != 3*(1+4) {
 		t.Errorf("report output:\n%s", out.String())
 	}
 }

@@ -49,6 +49,33 @@ func TestParseTimeRejectsOtherText(t *testing.T) {
 	}
 }
 
+func TestMetricColumnPreservesPresence(t *testing.T) {
+	t.Parallel()
+	var value time.Duration
+	var known bool
+	scanner := metricColumn(&value, &known)
+	for _, tc := range []struct {
+		src   any
+		want  time.Duration
+		known bool
+	}{
+		{int64(0), 0, true},
+		{int64(123), 123, true},
+		{nil, 0, false},
+		{int64(0), 0, true},
+	} {
+		if err := scanner.Scan(tc.src); err != nil {
+			t.Fatal(err)
+		}
+		if value != tc.want || known != tc.known {
+			t.Errorf("Scan(%v) = %v, %v; want %v, %v", tc.src, value, known, tc.want, tc.known)
+		}
+	}
+	if err := scanner.Scan("not a duration"); err == nil {
+		t.Error("invalid metric text was accepted")
+	}
+}
+
 func TestJoinModes(t *testing.T) {
 	t.Parallel()
 	modes := []domain.CacheMode{domain.CachePrefix, domain.CacheMiss}

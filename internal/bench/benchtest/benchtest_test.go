@@ -39,6 +39,28 @@ func TestClock(t *testing.T) {
 	}
 }
 
+func TestRecorderModelStorageKeys(t *testing.T) {
+	t.Parallel()
+	r := benchtest.NewRecorder()
+	models := []domain.Model{
+		{Name: "a", Identity: "session:s1:a"},
+		{Name: "b", Identity: "session:s1:b"},
+		{Name: "a", Identity: "session:s2:a"},
+		{Name: "a", Identity: "openai:a:r1", IdentitySource: "operator-revision", Revision: "r1"},
+		{Name: "native", Digest: "d"},
+	}
+	for range 2 {
+		for _, m := range models {
+			if err := r.SaveModel(context.Background(), m); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	if got := r.Models(); !slices.Equal(got, models) {
+		t.Errorf("models = %v, want distinct full identities in insertion order", got)
+	}
+}
+
 func TestRecorder(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()

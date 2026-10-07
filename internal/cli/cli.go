@@ -26,9 +26,14 @@ type Command interface{ command() }
 
 // Common holds the settings that several commands share.
 type Common struct {
-	DB      string // --db, dbVar, $XDG_DATA_HOME/dyno/bench.db, or ~/.local/share/dyno/bench.db
-	Host    string // --host; empty means that the ollama adapter uses OLLAMA_HOST or its default address
-	LogFile string // --log; empty means no log file
+	DB                                            string // --db, dbVar, $XDG_DATA_HOME/dyno/bench.db, or ~/.local/share/dyno/bench.db
+	Host                                          string // --host; empty means that the ollama adapter uses OLLAMA_HOST or its default address
+	LogFile                                       string // --log; empty means no log file
+	Backend, BaseURL, APIKeyEnv                   string
+	ServerKind, ServerVersion, ModelRevision      string
+	Usage, TokenLimitField                        string
+	SkipModelDiscovery, OmitSeed, OmitTemperature bool
+	apiKey                                        string // resolved secret; deliberately unexported
 }
 
 // VersionCommand prints the tool version.
@@ -134,7 +139,7 @@ func commands() []commandSpec {
 	return []commandSpec{
 		{"run", "--models LIST [options]", "execute a session", defineRun},
 		{"report", "[options]", "summarize the stored runs", defineReport},
-		{"models", "[--host URL]", "list the local models", defineModels},
+		{"models", "[--backend NAME] [--host URL]", "list the served models", defineModels},
 		{"version", "", "print the tool version", defineVersion},
 	}
 }
@@ -198,7 +203,7 @@ func (c Common) checkDB(command string) error {
 
 // addHost registers --host.
 func (c *Common) addHost(fs *flag.FlagSet) {
-	fs.StringVar(&c.Host, "host", "", "Ollama server `URL` (default: OLLAMA_HOST or http://127.0.0.1:11434)")
+	fs.StringVar(&c.Host, "host", "", "server `URL`; OpenAI API-base alias (Ollama default: OLLAMA_HOST or http://127.0.0.1:11434)")
 }
 
 // addLog registers --log.

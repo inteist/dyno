@@ -93,12 +93,14 @@ func failed(x domain.Exchange, err string) domain.Exchange {
 	return x
 }
 
-// wantRow returns the row that the run x of s gives. model is the stored
-// model row.
+// wantRow assembles explicitly expected persisted facts, without deriving
+// recorder defaults or availability. Only the exchange alias overrides model.Name.
 func wantRow(s domain.Session, model domain.Model, x domain.Exchange) report.Row {
 	model.Name = x.Model.Name
 	return report.Row{
 		Session: s.ID, StartedAt: x.StartedAt.UTC(), Tag: s.Tag, ServerVersion: s.ServerVersion,
+		Backend: s.Backend, ServerKind: s.ServerKind, VersionSource: s.VersionSource, Endpoint: s.Endpoint,
+		MeasurementProtocol: s.MeasurementProtocol, ContextPolicy: s.ContextPolicy, ConfigJSON: s.ConfigJSON,
 		Workload: s.Workload, Model: model, Mode: x.Step.Mode, Measurement: x.Measurement, Err: x.Err,
 	}
 }

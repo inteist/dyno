@@ -14,32 +14,50 @@ import (
 const dayLayout = "2006-01-02"
 
 // groupRows splits rows by their key. Each part keeps the order of rows.
-func groupRows(rows []Row, dims []Dimension, loc *time.Location) map[Key][]Row {
+func groupRows(rows []Row, dims []Dimension, loc *time.Location, policies policyKeys) map[Key][]Row {
 	parts := make(map[Key][]Row)
 	for _, r := range rows {
-		k := keyOf(r, dims, loc)
+		policy := ""
+		if slices.Contains(dims, ByMeasurement) {
+			policy = policies.key(r)
+		}
+		k := keyOf(r, dims, loc, policy)
+		// Identity provenance formats the group; only the full storage key
+		// defines its identity. Missing/new display facts must not split it.
+		k.IdentitySource, k.Revision = "", ""
 		parts[k] = append(parts[k], r)
 	}
 	return parts
 }
 
 // keyOf returns the key of r. Only the fields of dims are set.
-func keyOf(r Row, dims []Dimension, loc *time.Location) Key {
+func keyOf(r Row, dims []Dimension, loc *time.Location, policy string) Key {
 	k := Key{Bucket: bucketOf(r.StartedAt, dims, loc)}
 	for _, d := range dims {
-		setField(&k, d, r)
+		setField(&k, d, r, policy)
 	}
 	return k
 }
 
 // setField copies the value of r that d selects into k. bucketOf serves the
 // time dimensions.
-func setField(k *Key, d Dimension, r Row) {
+func setField(k *Key, d Dimension, r Row, policy string) {
 	switch d {
 	case ByModel:
 		k.Model = r.Model.Name
-	case ByDigest:
-		k.Digest = r.Model.ShortDigest()
+	case ByDigest, ByModelID:
+		k.Digest = r.Model.StorageKey()
+		k.IdentitySource = r.Model.IdentitySource
+		k.Revision = r.Model.Revision
+	case ByBackend:
+		k.Backend = r.BackendName()
+	case ByEngine:
+		k.Engine = r.Engine()
+	case ByEndpoint:
+		k.Endpoint = r.Endpoint
+	case ByMeasurement:
+		k.Measurement = r.Protocol()
+		k.Policy = policy
 	case ByServer:
 		k.Server = r.ServerVersion
 	case ByWorkload:
