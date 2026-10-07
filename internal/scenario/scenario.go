@@ -12,8 +12,9 @@ import (
 // Executor gives a scenario the actions that it needs. The runner binds an
 // executor to one step and one model.
 type Executor interface {
-	// Reload unloads the model, loads it again, and warms it up.
-	Reload(ctx context.Context) error
+	// ResetCache clears the cache through a real supported mechanism.
+	// Managed models retain their reload and warm-up behavior.
+	ResetCache(ctx context.Context) error
 	// Prime sends a request that is not measured and returns the reply.
 	Prime(ctx context.Context, conv domain.Conversation, maxTokens int) (domain.Message, error)
 }

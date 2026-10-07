@@ -18,9 +18,9 @@ type stepExecutor struct {
 	sent     int // the number of primers so far
 }
 
-// Reload unloads the model, loads it again, and warms it up.
-func (e *stepExecutor) Reload(ctx context.Context) error {
-	return e.life.reload(ctx, e.step, e.model)
+// ResetCache reloads and warms a managed model, or invokes a real external reset.
+func (e *stepExecutor) ResetCache(ctx context.Context) error {
+	return e.life.resetCache(ctx, e.step, e.model)
 }
 
 // Prime announces the primer and sends it as an exchange of kind primer.

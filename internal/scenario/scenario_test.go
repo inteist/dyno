@@ -19,7 +19,7 @@ func (s *seqIDs) Next() string { s.n++; return fmt.Sprintf("ID%d", s.n) }
 
 // call is one recorded call of fakeExec.
 type call struct {
-	reload    bool
+	reset     bool
 	conv      domain.Conversation
 	maxTokens int
 }
@@ -32,8 +32,8 @@ type fakeExec struct {
 	err    error
 }
 
-func (f *fakeExec) Reload(context.Context) error {
-	return f.record(call{reload: true})
+func (f *fakeExec) ResetCache(context.Context) error {
+	return f.record(call{reset: true})
 }
 
 func (f *fakeExec) Prime(_ context.Context, conv domain.Conversation, maxTokens int) (domain.Message, error) {
@@ -193,7 +193,7 @@ func TestContinue(t *testing.T) {
 	if len(exec.calls) != 1 {
 		t.Fatalf("calls = %v, want one Prime", exec.calls)
 	}
-	if c := exec.calls[0]; c.reload || c.maxTokens != 64 || !slices.Equal(c.conv, first) {
+	if c := exec.calls[0]; c.reset || c.maxTokens != 64 || !slices.Equal(c.conv, first) {
 		t.Errorf("Prime call = %+v, want the first turn with 64 tokens", c)
 	}
 }
@@ -205,12 +205,12 @@ func TestPrefix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(exec.calls) != 3 || !exec.calls[0].reload {
-		t.Fatalf("calls = %+v, want Reload and two Prime calls", exec.calls)
+	if len(exec.calls) != 3 || !exec.calls[0].reset {
+		t.Fatalf("calls = %+v, want ResetCache and two Prime calls", exec.calls)
 	}
 	convs := []domain.Conversation{exec.calls[1].conv, exec.calls[2].conv, conv}
 	for i, c := range exec.calls[1:] {
-		if c.reload || c.maxTokens != 1 {
+		if c.reset || c.maxTokens != 1 {
 			t.Errorf("call %d = %+v, want Prime with 1 token", i+2, c)
 		}
 	}
@@ -232,7 +232,7 @@ func TestPrepareErrors(t *testing.T) {
 		want   string
 	}{
 		{"continue primer", domain.CacheContinue, 1, "first turn: boom"},
-		{"prefix reload", domain.CachePrefix, 1, "reload: boom"},
+		{"prefix reset", domain.CachePrefix, 1, "reset cache: boom"},
 		{"prefix primer 1", domain.CachePrefix, 2, "primer 1: boom"},
 		{"prefix primer 2", domain.CachePrefix, 3, "primer 2: boom"},
 	}

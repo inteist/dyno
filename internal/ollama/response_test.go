@@ -97,6 +97,10 @@ func TestChatMapsMetricsFieldByField(t *testing.T) {
 				res, _ := replayChat(t, stream, time.Now, nil)
 
 				got, want := res.Measurement.Server, rawMetrics(t, lastLine)
+				if got.Has(domain.MetricCachedTokens) != bytes.Contains(lastLine, []byte(`"prompt_eval_cached_count"`)) {
+					t.Errorf("cached-count presence was lost: %+v", got)
+				}
+				got.Available = nil // scalar field-by-field comparison below
 				if got != want {
 					t.Errorf("server metrics = %+v, want %+v", got, want)
 				}

@@ -13,18 +13,18 @@ import (
 const prefixPrimers = 2
 
 // prefix implements the prefix mode: a new question after the same system
-// part, on a freshly loaded model.
+// part, after a supported cache reset.
 type prefix struct{ turns }
 
 func (prefix) Mode() domain.CacheMode { return domain.CachePrefix }
 
 func (prefix) Primers() int { return prefixPrimers }
 
-// Prepare reloads the model, sends the primers, and returns a new first turn
+// Prepare resets the cache, sends the primers, and returns a new first turn
 // with the same system part.
 func (s prefix) Prepare(ctx context.Context, exec Executor) (domain.Conversation, error) {
-	if err := exec.Reload(ctx); err != nil {
-		return nil, fmt.Errorf("reload: %w", err)
+	if err := exec.ResetCache(ctx); err != nil {
+		return nil, fmt.Errorf("reset cache: %w", err)
 	}
 	for i := range prefixPrimers {
 		if _, err := exec.Prime(ctx, s.next(beforeQuestion), 1); err != nil {

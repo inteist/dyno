@@ -34,29 +34,41 @@ const (
 	warm                      // the session warmed the model up
 )
 
-// lifecycle loads, warms up, reloads, and unloads the models of one session.
+// lifecycle tracks readiness separately from ownership. Managed models are
+// loaded/reloaded/unloaded; external models are only warmed up once per session.
 type lifecycle struct {
-	client    llm.Client
+	managed   llm.ManagedLifecycle
+	resetter  llm.CacheResetter
 	clock     Clock
 	sink      event.Sink
 	exchange  *exchanger
 	keepAlive time.Duration
 	numCtx    int                  // the context size of the chats, also for loads
-	held      map[string]readiness // the models that the session must release
+	held      map[string]readiness // managed models that the session must release
+	ready     map[string]bool      // external readiness, never ownership
 }
 
 // newLifecycle returns a lifecycle that holds no model.
 func newLifecycle(client llm.Client, clock Clock, sink event.Sink, x *exchanger, keepAlive time.Duration, numCtx int) *lifecycle {
+	managed, _ := client.(llm.ManagedLifecycle)
+	resetter, _ := client.(llm.CacheResetter)
 	return &lifecycle{
-		client: client, clock: clock, sink: sink, exchange: x,
-		keepAlive: keepAlive, numCtx: numCtx, held: map[string]readiness{},
+		managed: managed, resetter: resetter, clock: clock, sink: sink, exchange: x,
+		keepAlive: keepAlive, numCtx: numCtx, held: map[string]readiness{}, ready: map[string]bool{},
 	}
 }
 
 // ensureReady makes model ready for step. It loads the model if the server
 // does not run it. It sends one warm-up after each load, and one to a model
-// that ran before this session warmed it.
+// that ran before this session warmed it. An external model needs only one
+// warm-up, without discovery polling or ownership of its runner.
 func (l *lifecycle) ensureReady(ctx context.Context, step domain.Step, model domain.Model) error {
+	if l.managed == nil {
+		if l.ready[model.Name] {
+			return nil
+		}
+		return l.warmUp(ctx, step, model)
+	}
 	running, err := l.isRunning(ctx, model.Name)
 	if err != nil {
 		return err
@@ -74,7 +86,7 @@ func (l *lifecycle) ensureReady(ctx context.Context, step domain.Step, model dom
 
 // isRunning reports whether the server lists model as loaded.
 func (l *lifecycle) isRunning(ctx context.Context, model string) (bool, error) {
-	running, err := l.client.Running(ctx)
+	running, err := l.managed.Running(ctx)
 	if err != nil {
 		return false, fmt.Errorf("list running models: %w", err)
 	}
@@ -88,7 +100,7 @@ func (l *lifecycle) isRunning(ctx context.Context, model string) (bool, error) {
 func (l *lifecycle) load(ctx context.Context, model string) error {
 	l.sink.Publish(event.ModelLoading{Model: model})
 	l.held[model] = cold
-	took, err := l.client.Load(ctx, model, l.keepAlive, l.numCtx)
+	took, err := l.managed.Load(ctx, model, l.keepAlive, l.numCtx)
 	if err != nil {
 		if ctx.Err() == nil {
 			delete(l.held, model)
@@ -106,8 +118,25 @@ func (l *lifecycle) warmUp(ctx context.Context, step domain.Step, model domain.M
 	if _, _, err := l.exchange.send(ctx, step, model, domain.KindWarmup, conv, warmUpTokens, nil); err != nil {
 		return fmt.Errorf("warm-up: %w", err)
 	}
-	l.held[model.Name] = warm
+	if l.managed == nil {
+		l.ready[model.Name] = true
+	} else {
+		l.held[model.Name] = warm
+	}
 	return nil
+}
+
+// resetCache preserves the native reload mechanism, or invokes a real external
+// cache reset. A reset failure cannot fall back to an assumed empty cache.
+func (l *lifecycle) resetCache(ctx context.Context, step domain.Step, model domain.Model) error {
+	if l.managed != nil {
+		return l.reload(ctx, step, model)
+	}
+	if l.resetter == nil {
+		return errors.New("external cache mode prefix requires a real cache reset")
+	}
+	l.sink.Publish(event.Preparing{Step: step, Action: event.ActionResetCache})
+	return l.resetter.ResetCache(ctx, model.Name)
 }
 
 // reload unloads model, waits until the server no longer lists it, and makes
@@ -129,7 +158,7 @@ func (l *lifecycle) reload(ctx context.Context, step domain.Step, model domain.M
 
 // unload asks the server to unload model.
 func (l *lifecycle) unload(ctx context.Context, model string) error {
-	if err := l.client.Unload(ctx, model); err != nil {
+	if err := l.managed.Unload(ctx, model); err != nil {
 		return fmt.Errorf("unload %s: %w", model, err)
 	}
 	return nil
@@ -157,6 +186,9 @@ func (l *lifecycle) waitGone(ctx context.Context, model string) error {
 // nothing for a model that the session does not hold. A model that fails to
 // unload stays held, so that releaseAll tries again.
 func (l *lifecycle) release(ctx context.Context, model string) error {
+	if l.managed == nil {
+		return nil
+	}
 	if _, ok := l.held[model]; !ok {
 		return nil
 	}

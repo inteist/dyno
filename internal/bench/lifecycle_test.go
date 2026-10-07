@@ -64,7 +64,7 @@ func TestPrefixReloadTimesOut(t *testing.T) {
 		t.Errorf("%d sleeps over %s, want 300 over 30s", len(sleeps), h.clock.Now().Sub(testStart()))
 	}
 	failed := eventtest.Of[event.StepFailed](h.events)
-	if len(failed) != 1 || !strings.Contains(failed[0].Err.Error(), "reload: a still runs 30s after the unload") {
+	if len(failed) != 1 || !strings.Contains(failed[0].Err.Error(), "reset cache: a still runs 30s after the unload") {
 		t.Errorf("StepFailed = %+v", failed)
 	}
 	if loads := h.client.CallsOf(llmtest.MethodLoad); len(loads) != 1 {
@@ -108,7 +108,7 @@ func TestLifecycleErrorsFailTheStep(t *testing.T) {
 	}{
 		{"running", llmtest.MethodRunning, domain.CacheMiss, "make a ready: list running models: boom"},
 		{"load", llmtest.MethodLoad, domain.CacheMiss, "make a ready: load: boom"},
-		{"reload", llmtest.MethodUnload, domain.CachePrefix, "prepare a prefix: reload: unload a: boom"},
+		{"reload", llmtest.MethodUnload, domain.CachePrefix, "prepare a prefix: reset cache: unload a: boom"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
