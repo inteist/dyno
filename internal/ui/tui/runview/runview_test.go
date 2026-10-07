@@ -115,7 +115,7 @@ func runningEvents() []event.Event {
 	ev := []event.Event{event.SessionStarted{Session: sampleSession(), Steps: steps}, started(0)}
 	ev = append(ev, loaded(qwen, steps[0], 3300*ms)...)
 	ev = append(ev,
-		event.Progress{Step: steps[0], Tokens: 1, Elapsed: 2240 * ms},
+		event.Progress{Step: steps[0], Chunks: 1, Elapsed: 2240 * ms},
 		finished(steps[0], measurement(9242*ms, 2207*ms, 2236*ms, 0)),
 		waiting(0),
 		started(1),
@@ -131,8 +131,8 @@ func runningEvents() []event.Event {
 	)
 	ev = append(ev, primers(steps[3])...)
 	return append(ev,
-		event.Progress{Step: steps[3], Tokens: 1, Elapsed: 320 * ms},
-		event.Progress{Step: steps[3], Tokens: 214, Elapsed: 4120 * ms},
+		event.Progress{Step: steps[3], Chunks: 1, Elapsed: 320 * ms},
+		event.Progress{Step: steps[3], Chunks: 214, Elapsed: 4120 * ms},
 	)
 }
 
@@ -196,7 +196,7 @@ func digestOf(model string) string {
 }
 
 func groupKey(model string, mode domain.CacheMode) report.Key {
-	return report.Key{Model: model, Digest: domain.Model{Digest: digestOf(model)}.ShortDigest(), Server: "0.34.0", Mode: string(mode)}
+	return report.Key{Model: model, Digest: digestOf(model), Backend: domain.BackendOllama, Engine: domain.BackendOllama, Measurement: domain.ProtocolOllama, Server: "0.34.0", Mode: string(mode)}
 }
 
 // sessionReport is the report of the sample session, grouped as the app
@@ -206,20 +206,20 @@ func sessionReport() report.Report {
 		Dimensions: []report.Dimension{report.ByModel, report.ByMode},
 		Groups: []report.Group{
 			{
-				Key: groupKey(qwen, domain.CacheMiss), Decode: spreadOf(1, 55.4, 0),
+				Key: groupKey(qwen, domain.CacheMiss), Valid: 1, Decode: spreadOf(1, 55.4, 0),
 				Prefill: median(1, 2207.1), TTFT: median(1, 2236), CachedShare: median(1, 0),
 				Excluded: map[report.Flag]int{report.FlagFailed: 1},
 			},
 			{
-				Key: groupKey(qwen, domain.CachePrefix), Decode: spreadOf(2, 56.05, 0.21),
+				Key: groupKey(qwen, domain.CachePrefix), Valid: 2, Decode: spreadOf(2, 56.05, 0.21),
 				Prefill: median(2, 302.4), TTFT: median(2, 318.2), CachedShare: median(2, 0.75),
 			},
 			{
-				Key: groupKey(lfm, domain.CacheMiss), Decode: spreadOf(2, 151.2, 1.13),
+				Key: groupKey(lfm, domain.CacheMiss), Valid: 2, Decode: spreadOf(2, 151.2, 1.13),
 				Prefill: median(2, 998.7), TTFT: median(2, 1012.6), CachedShare: median(2, 0),
 			},
 			{
-				Key: groupKey(lfm, domain.CachePrefix), Decode: spreadOf(2, 150.95, 0.35),
+				Key: groupKey(lfm, domain.CachePrefix), Valid: 2, Decode: spreadOf(2, 150.95, 0.35),
 				Prefill: median(2, 121.5), TTFT: median(2, 133.9), CachedShare: median(2, 0.749),
 			},
 		},
@@ -235,22 +235,22 @@ func sessionReport() report.Report {
 // all sessions.
 func allTimeReport() report.Report {
 	return report.Report{
-		Dimensions: []report.Dimension{report.ByModel, report.ByDigest, report.ByServer, report.ByMode},
+		Dimensions: report.AllTimeDimensions(),
 		Groups: []report.Group{
 			{
-				Key: groupKey(qwen, domain.CacheMiss), Decode: spreadOf(60, 56.21, 0.84),
-				Prefill: median(60, 1941.3), TTFT: median(60, 1958.4), CachedShare: median(60, 0),
+				Key: groupKey(qwen, domain.CacheMiss), Valid: 60, Decode: spreadOf(60, 56.21, 0.84),
+				Prefill: median(60, 1941.3), TTFT: median(60, 1958.4), CachedShare: median(60, 0), Latency: median(60, 11000), ClientRate: median(60, 45),
 				Excluded: map[report.Flag]int{report.FlagShort: 2},
 			},
 			{
-				Key: groupKey(qwen, domain.CachePrefix), Decode: spreadOf(60, 56.04, 0.91),
-				Prefill: median(60, 56.2), TTFT: median(60, 71.4), CachedShare: median(60, 0.99),
+				Key: groupKey(qwen, domain.CachePrefix), Valid: 60, Decode: spreadOf(60, 56.04, 0.91),
+				Prefill: median(60, 56.2), TTFT: median(60, 71.4), CachedShare: median(60, 0.99), Latency: median(60, 10000), ClientRate: median(60, 51),
 			},
 			{
 				Key: groupKey(lfm, domain.CacheMiss), Excluded: map[report.Flag]int{report.FlagFailed: 3},
 			},
 			{
-				Key: groupKey(lfm, domain.CachePrefix), Decode: spreadOf(58, 151.33, 2.07),
+				Key: groupKey(lfm, domain.CachePrefix), Valid: 58, Decode: spreadOf(58, 151.33, 2.07),
 				Prefill: median(58, 302.4), TTFT: median(58, 318.1), CachedShare: median(58, 0.75),
 				Excluded: map[report.Flag]int{report.FlagLoadInRun: 1, report.FlagFailed: 1},
 			},

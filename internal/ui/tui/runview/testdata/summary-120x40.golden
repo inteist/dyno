@@ -15,10 +15,11 @@
  lfm2.5:8b       prefix  2   151.0 ± 0.4         122      134    75 %
 
  all sessions with this workload · 186 runs · 178 valid · 23 sessions · 2026-10-05 → 2026-11-02
- MODEL           DIGEST        SERVER  MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
- qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  miss    60    56.2 ± 0.8       1,941    1,958     0 %  2 short
- qwen3.5:4b-mlx  a80c4f17acd5  0.34.0  prefix  60    56.0 ± 0.9          56       71    99 %
- lfm2.5:8b       4a6e7ed5d0e8  0.34.0  miss     0             -           -        -       -  3 failed
- lfm2.5:8b       4a6e7ed5d0e8  0.34.0  prefix  58   151.3 ± 2.1         302      318    75 %  1 failed, 1 load-in-run
+ SERVER 0.34.0
+ MODEL           MODE     N  DECODE tok/s  PREFILL ms  TTFT ms  CACHED  EXCLUDED
+ qwen3.5:4b-mlx  miss    60    56.2 ± 0.8       1,941    1,958     0 %  2 short
+ qwen3.5:4b-mlx  prefix  60    56.0 ± 0.9          56       71    99 %
+ lfm2.5:8b       miss     0             -           -        -       -  3 failed
+ lfm2.5:8b       prefix  58   151.3 ± 2.1         302      318    75 %  1 failed, 1 load-in-run
 
  q quit
