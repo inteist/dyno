@@ -59,7 +59,7 @@ func TestParseHelp(t *testing.T) {
 		{[]string{"--help"}, "Usage: dyno <command>"},
 		{[]string{"run", "-h"}, "Usage: dyno run --models LIST"},
 		{[]string{"report", "--help"}, "Usage: dyno report [options]"},
-		{[]string{"models", "-help"}, "Usage: dyno models [--host URL]"},
+		{[]string{"models", "-help"}, "Usage: dyno models [--backend NAME] [--host URL]"},
 		{[]string{"version", "-h"}, "Usage: dyno version"},
 	}
 	for _, tt := range tests {
@@ -220,7 +220,8 @@ func TestModelNamesGetTheDefaultTag(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, want := cmd.(ReportCommand).Filter.Models, []string{"lfm2.5:latest"}; !slices.Equal(got, want) {
+	// Report preserves the literal ID; SQLite adds the shorthand only for Ollama rows.
+	if got, want := cmd.(ReportCommand).Filter.Models, []string{"lfm2.5"}; !slices.Equal(got, want) {
 		t.Errorf("report --model = %v, want %v", got, want)
 	}
 	if _, _, err := parse(testEnv(t, nil), "run", "--models", "lfm2.5,lfm2.5:latest"); !errors.Is(err, bench.ErrInvalidOptions) {

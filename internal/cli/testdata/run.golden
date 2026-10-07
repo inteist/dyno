@@ -3,21 +3,32 @@ dyno run: execute a session
 Usage: dyno run --models LIST [options]
 
 Options:
+  --api-key-env name           environment variable name for bearer authentication (default: OPENAI_API_KEY)
+  --backend string             inference protocol: ollama or openai (default: ollama)
+  --base-url URL               full OpenAI-compatible API base URL, including its path
   --cache modes                cache modes: miss, continue, prefix (default miss)
   --db path                    database path (default /home/max/.local/share/dyno/bench.db)
-  --host URL                   Ollama server URL (default: OLLAMA_HOST or http://127.0.0.1:11434)
+  --host URL                   server URL; OpenAI API-base alias (Ollama default: OLLAMA_HOST or http://127.0.0.1:11434)
   --interval duration          pause between two steps, 0 or more (default 30s)
   --keep-alive duration        how long the server keeps a model loaded, longer than the interval (default: max(10m, interval + 5m))
   --log file                   file that gets a plain-text copy of the session events
+  --model-revision revision    operator-supplied immutable model revision (single model; unpadded printable max 64, or sha256:<64 hex>)
   --models names               comma-separated model names (required)
   --num-ctx int                context size in tokens, 1 or more (default 8192)
   --num-predict int            tokens to generate in each request, 1 or more (default 512)
+  --omit-seed                  omit seed for compatible endpoints that reject it; record that policy
+  --omit-temperature           omit temperature for compatible endpoints that reject it; record that policy
   --order order                step order: model, round-robin (default model)
   --plain                      plain text, also in a terminal
   --prompt set                 prompt set: short, long, or a JSON file (default: short for --cache miss, else long)
   --request-timeout duration   limit of one request (default 10m0s)
   --runs int                   measured runs of each model and cache mode, 1 or more (default 5)
   --seed int                   sampling seed (default 42)
-  --tag text                   free text that marks the session
+  --server engine              declared compatible server engine: unknown or vllm (not its version)
+  --server-version version     operator-supplied compatible server version (max 64 printable characters)
+  --skip-model-discovery       use supplied IDs without calling the models endpoint
+  --tag text                   printable text that marks the session (no controls; unrestricted length)
   --temperature float          sampling temperature, 0 or more
+  --token-limit-field string   compatible token-limit field: max_tokens or max_completion_tokens (default: max_tokens)
+  --usage string               streaming usage policy: required or off (default: required)
   -h, --help                   show this help

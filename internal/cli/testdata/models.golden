@@ -1,7 +1,12 @@
-dyno models: list the local models
+dyno models: list the served models
 
-Usage: dyno models [--host URL]
+Usage: dyno models [--backend NAME] [--host URL]
 
 Options:
-  --host URL   Ollama server URL (default: OLLAMA_HOST or http://127.0.0.1:11434)
-  -h, --help   show this help
+  --api-key-env name         environment variable name for bearer authentication (default: OPENAI_API_KEY)
+  --backend string           inference protocol: ollama or openai (default: ollama)
+  --base-url URL             full OpenAI-compatible API base URL, including its path
+  --host URL                 server URL; OpenAI API-base alias (Ollama default: OLLAMA_HOST or http://127.0.0.1:11434)
+  --server engine            declared compatible server engine: unknown or vllm (not its version)
+  --server-version version   operator-supplied compatible server version (max 64 printable characters)
+  -h, --help                 show this help

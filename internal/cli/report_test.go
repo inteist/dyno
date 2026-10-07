@@ -36,7 +36,7 @@ func TestParseReport(t *testing.T) {
 			c.Common = Common{DB: "/data/x.db"}
 			c.Plain = true
 			c.Filter = report.Filter{
-				Models:     []string{"a:latest", "b:latest"},
+				Models:     []string{"a", "b"}, // offline storage expands shorthand only for Ollama rows
 				CacheModes: []domain.CacheMode{domain.CacheMiss, domain.CacheContinue},
 				Prompts:    []string{"short"},
 				Tags:       []string{"x", "y"},
