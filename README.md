@@ -426,7 +426,7 @@ reports `(devel)`.
 
 | Build                          | `dyno version` output                             |
 | ------------------------------ | ------------------------------------------------- |
-| Tagged commit                  | `dyno v0.2.0+3f2c9a1b7d4e`                        |
+| Tagged commit                  | `dyno v0.2.0`                                    |
 | Commits after the tag          | `dyno v0.2.1-0.20261007230857-3f2c9a1b7d4e`       |
 | Same, with uncommitted changes | `dyno v0.2.1-0.20261007230857-3f2c9a1b7d4e-dirty` |
 | No tag yet                     | `dyno v0.0.0-20261007230857-3f2c9a1b7d4e`         |
@@ -441,10 +441,10 @@ git push origin v0.2.0                  # publish the tag
 `just release` stops if `just check` fails. It also refuses uncommitted or
 untracked files, an existing tag, and a noncanonical number.
 
-A build of the tagged commit reports the release number, then `+` and the
-commit. A build after the tag reports a Go pseudo-version: the next patch
-number, a date, and a commit. Results from such a build are never mistaken for
-a release. Choose the next number by the change: patch for a
+A clean build of the tagged commit reports just the release number. A build
+after the tag reports a Go pseudo-version: the next patch number, a date, and a
+commit. Local changes add `-dirty`. Results from such a build are never mistaken
+for a release. Choose the next number by the change: patch for a
 repaired bug, minor for a new feature or option, major for a break in the stored
 data or the output format.
 
