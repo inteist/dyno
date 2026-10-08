@@ -414,6 +414,45 @@ just agent-install                                  # with DYNO_* instead of TOK
 With `XDG_DATA_HOME` or `XDG_STATE_HOME` set, the folders are below those
 paths.
 
+## Versioning
+
+The version is a Git tag of the form `vMAJOR.MINOR.PATCH`. The Go build reads the
+tag, so no file holds the number. `dyno version` prints what the build found, and
+each session records it as `tool_version`.
+
+The examples assume a build from a Git checkout that has the release tags. A
+checkout without the tags reports `v0.0.0-…`, and a build without Git data
+reports `(devel)`.
+
+| Build                          | `dyno version` output                             |
+| ------------------------------ | ------------------------------------------------- |
+| Tagged commit                  | `dyno v0.2.0+3f2c9a1b7d4e`                        |
+| Commits after the tag          | `dyno v0.2.1-0.20261007230857-3f2c9a1b7d4e`       |
+| Same, with uncommitted changes | `dyno v0.2.1-0.20261007230857-3f2c9a1b7d4e-dirty` |
+| No tag yet                     | `dyno v0.0.0-20261007230857-3f2c9a1b7d4e`         |
+
+```sh
+git tag --list 'v*' --sort=-v:refname   # releases so far
+just version                            # build, then print this tree's version
+just release 0.2.0                      # run just check, then tag HEAD as v0.2.0
+git push origin v0.2.0                  # publish the tag
+```
+
+`just release` stops if `just check` fails. It also refuses uncommitted or
+untracked files, an existing tag, and a noncanonical number.
+
+A build of the tagged commit reports the release number, then `+` and the
+commit. A build after the tag reports a Go pseudo-version: the next patch
+number, a date, and a commit. Results from such a build are never mistaken for
+a release. Choose the next number by the change: patch for a
+repaired bug, minor for a new feature or option, major for a break in the stored
+data or the output format.
+
+`just release` accepts only canonical numbers with major version 0 or 1. Go
+ignores a `v2.0.0` or later tag while the module path is `dyno` without a `/v2`
+suffix, so the build would report an older version. Before the first v2 release,
+change the module path or stop reading the version from Go's module inference.
+
 ## Development
 
 ```sh
