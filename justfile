@@ -6,6 +6,10 @@ build:
 install:
     go install ./cmd/dyno
 
+# Print the version that a build of the current tree reports.
+version: build
+    ./bin/dyno version
+
 test:
     go test -race ./...
 
