@@ -18,19 +18,18 @@ const (
 )
 
 // ToolVersion returns the version of this binary, for example
-// "v1.2.0+3f2c9a1b7d4e" or "(devel)+3f2c9a1b7d4e-dirty".
+// "v1.2.0" or "(devel)+3f2c9a1b7d4e-dirty".
 func ToolVersion() string { return versionFrom(debug.ReadBuildInfo()) }
 
-// versionFrom returns the module version, plus the short VCS revision and
-// "-dirty" for local changes. The go command can already have put the
-// revision and "+dirty" into the module version, so versionFrom adds each
-// part only once.
+// versionFrom returns the module version, or a development version with the
+// short VCS revision when no module version is available. Local changes use
+// "-dirty" rather than the go command's "+dirty" suffix.
 func versionFrom(info *debug.BuildInfo, ok bool) string {
 	if !ok || info == nil {
 		return develVersion
 	}
 	version := strings.TrimSuffix(cmp.Or(info.Main.Version, develVersion), goDirty)
-	if rev := shortRevision(info); rev != "" && !strings.Contains(version, rev) {
+	if rev := shortRevision(info); version == develVersion && rev != "" {
 		version += "+" + rev
 	}
 	if setting(info, "vcs.modified") == "true" {
