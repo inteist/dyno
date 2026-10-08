@@ -10,6 +10,10 @@ install:
 version: build
     ./bin/dyno version
 
+# Run the checks, then tag HEAD, for example `just release 0.2.0`. Does not push.
+release $version: check
+    ./scripts/release.sh "$version"
+
 test:
     go test -race ./...
 
